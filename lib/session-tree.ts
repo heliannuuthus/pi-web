@@ -36,7 +36,7 @@ export type SidebarRowKind =
  * group from the next and the groups from the footer.
  */
 export const SIDEBAR_ROW_HEIGHTS: Record<SidebarLayout, Record<SidebarRowKind, number>> = {
-  desktop: { "pinned-header": 28, session: 28, "pinned-more": 26, group: 28, "group-more": 26, "group-empty": 28, spacer: 8, "footer-open": 28, "footer-archived": 28, "archive-group": 28 },
+  desktop: { "pinned-header": 36, session: 36, "pinned-more": 32, group: 36, "group-more": 32, "group-empty": 36, spacer: 8, "footer-open": 36, "footer-archived": 36, "archive-group": 36 },
   mobile: { "pinned-header": 44, session: 44, "pinned-more": 36, group: 44, "group-more": 36, "group-empty": 44, spacer: 8, "footer-open": 44, "footer-archived": 44, "archive-group": 44 },
 };
 export const GROUP_VISIBLE_LIMIT = 6;

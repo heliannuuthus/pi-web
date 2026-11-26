@@ -206,7 +206,7 @@ export function ModelSelector({
         cursor: locked ? "not-allowed" : "pointer",
         fontSize: 12,
         opacity: locked ? 0.5 : 1,
-        transition: "background 0.12s, color 0.12s",
+        transition: "transform 140ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)), background-color 140ms ease, color 140ms ease",
       };
 
   const choose = (option: ModelSelectorOption) => {

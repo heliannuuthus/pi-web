@@ -267,11 +267,18 @@ export function SessionUsageRing({
   const contextPercent = ctx?.percent ?? null;
   const { segments, isIdle } = computeUsageRingSegments(sessionStats?.tokens);
 
-  let centerAlertColor: string | null = null;
-  if (contextPercent !== null && contextPercent > 90) {
-    centerAlertColor = "#ef4444";
-  } else if (contextPercent !== null && contextPercent > 70) {
-    centerAlertColor = "#f59e0b";
+  const clampedContextPercent = contextPercent !== null
+    ? Math.max(0, Math.min(100, contextPercent))
+    : null;
+
+  let contextRingColor = "var(--accent)";
+  let contextTextColor = "var(--text-muted)";
+  if (clampedContextPercent !== null && clampedContextPercent > 90) {
+    contextRingColor = "#ef4444";
+    contextTextColor = "#ef4444";
+  } else if (clampedContextPercent !== null && clampedContextPercent > 70) {
+    contextRingColor = "#f59e0b";
+    contextTextColor = "#d97706";
   }
 
   const ringSize = isMobile ? 20 : 17;
@@ -339,11 +346,50 @@ export function SessionUsageRing({
           />
         ))}
       </g>
-      {centerAlertColor && (
-        <circle cx="10" cy="10" r="2.2" fill={centerAlertColor} />
-      )}
     </svg>
   );
+
+  const renderContextRingSvg = (size: number) => {
+    const filledLen = clampedContextPercent !== null
+      ? (clampedContextPercent > 0 ? Math.max(1.8, (clampedContextPercent / 100) * RING_CIRCUMFERENCE) : 0)
+      : 0;
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        aria-hidden="true"
+        style={{ display: "block", flexShrink: 0 }}
+      >
+        <circle
+          cx="10"
+          cy="10"
+          r={RING_RADIUS}
+          fill="none"
+          stroke="color-mix(in oklab, var(--text) 16%, transparent)"
+          strokeWidth="2.5"
+        />
+        {clampedContextPercent !== null && clampedContextPercent > 0 && (
+          <g transform="rotate(-90 10 10)">
+            <circle
+              cx="10"
+              cy="10"
+              r={RING_RADIUS}
+              fill="none"
+              stroke={contextRingColor}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeDasharray={`${filledLen.toFixed(2)} ${RING_CIRCUMFERENCE.toFixed(2)}`}
+              style={{
+                transition: "stroke-dasharray 360ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)), stroke 220ms ease",
+              }}
+            />
+          </g>
+        )}
+      </svg>
+    );
+  };
 
   return (
     <div
@@ -371,19 +417,36 @@ export function SessionUsageRing({
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          width: controlSize,
+          gap: 5,
+          minWidth: controlSize,
           height: controlSize,
-          padding: 0,
+          padding: !isMobile && clampedContextPercent !== null ? "0 8px 0 6px" : 0,
           border: "none",
           borderRadius: 9,
           background: isOpen
             ? "color-mix(in oklab, var(--accent) 9%, var(--bg-hover))"
             : "transparent",
           cursor: "pointer",
-          transition: "background 140ms ease, transform 160ms cubic-bezier(0.22, 1, 0.36, 1)",
+          transition: "background-color 140ms ease, transform 140ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1))",
         }}
       >
-        {renderRingSvg(ringSize)}
+        {renderContextRingSvg(ringSize)}
+        {!isMobile && clampedContextPercent !== null && (
+          <span
+            className="session-usage-ring-pct"
+            style={{
+              fontSize: 11.5,
+              fontWeight: 500,
+              lineHeight: 1,
+              fontVariantNumeric: "tabular-nums",
+              color: contextTextColor,
+              whiteSpace: "nowrap",
+              transition: "color 220ms ease",
+            }}
+          >
+            {Math.round(clampedContextPercent)}%
+          </span>
+        )}
       </button>
 
       {isOpen && (
@@ -475,7 +538,9 @@ export function SessionUsageRing({
                 }}>
                   {contextPercent !== null ? `${contextPercent.toFixed(1)}%` : "?"}
                   <span style={{ color: "var(--text-dim)", fontWeight: 400 }}>
-                    {" / "}{formatCompactCount(ctx.contextWindow)}
+                    {ctx.tokens !== null && ctx.tokens !== undefined
+                      ? ` · ${formatCompactCount(ctx.tokens)} / ${formatCompactCount(ctx.contextWindow)}`
+                      : ` / ${formatCompactCount(ctx.contextWindow)}`}
                   </span>
                 </span>
               </div>

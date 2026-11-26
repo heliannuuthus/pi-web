@@ -40,12 +40,11 @@ test("preserves pasted HTML links as Markdown without changing plain text layout
   assert.equal(replaceLinksWithMarkdown("plain text", [link("missing", "https://example.com")]), null);
 });
 
-test("a phone stacks the streaming buttons under the draft instead of beside it", () => {
-  // Two buttons in the draft's row leave the placeholder about 150px on a 360px
-  // phone. Only a streaming run has those buttons; idle keeps the icon-only send
-  // button in the row, and a desktop has width for the row either way.
-  assert.equal(stacksComposerLayout(false, false, false), false);
-  assert.equal(stacksComposerLayout(false, false, true), false);
+test("desktop and streaming stack the action row under the draft instead of beside it", () => {
+  // Desktop always stacks so multi-line drafts and streaming action buttons never squeeze each other.
+  assert.equal(stacksComposerLayout(false, false, false), true);
+  assert.equal(stacksComposerLayout(false, false, true), true);
+  // Phone idle keeps the compact single-row icon-only send button; phone streaming stacks.
   assert.equal(stacksComposerLayout(false, true, false), false);
   assert.equal(stacksComposerLayout(false, true, true), true);
   // Quote mode always stacks: it is a short excerpt, whichever platform shows it.

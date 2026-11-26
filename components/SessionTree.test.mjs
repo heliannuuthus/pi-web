@@ -116,7 +116,7 @@ test("the pinned header toggles the section and shows activity dots only while c
     rows: [{ kind: "pinned-header", key: "pinned-header", count: 3, collapsed: true, running: 1, awaiting: 0, unread: 2 }],
   }), "pinned-header");
   // A group header's height: both are section headers.
-  assert.match(collapsed, /^<div class="session-tree-row session-tree-pinned-header" style="top:0;height:28px" data-row-key="pinned-header">/);
+  assert.match(collapsed, /^<div class="session-tree-row session-tree-pinned-header" style="top:0;height:36px" data-row-key="pinned-header">/);
   assert.match(collapsed, /<button type="button" class="session-tree-pinned-toggle" aria-expanded="false">/);
   // Its chevron leads, in the chevron column, decoration only; no pin icon.
   assert.match(collapsed, /aria-expanded="false"><svg width="12" height="12"[^>]*stroke-width="3"[^>]*class="session-tree-chevron" aria-hidden="true">[\s\S]*?<\/svg><span class="session-tree-pinned-label">Pinned<\/span><span class="session-tree-pinned-count">· 3<\/span><span class="session-tree-pinned-dot is-running"/);
@@ -160,7 +160,7 @@ test("a collapsed group shows its running and unread counts and labelled actions
   });
   assert.doesNotMatch(collapsedTree, /session-tree-group-card/);
   const html = rowMarkup(collapsedTree, "group:/work/app");
-  assert.match(html, /^<div class="session-tree-row session-tree-group" style="top:0;height:28px"/);
+  assert.match(html, /^<div class="session-tree-row session-tree-group" style="top:0;height:36px"/);
   assert.match(html, /<button type="button" class="session-tree-group-toggle" aria-expanded="false" title="\/work\/app">/);
   // Codex-style folder group header: chevron + closed folder icon lead, then name, pin, activity summary, and count pill.
   assert.match(html, /title="\/work\/app"><svg width="10" height="10"[^>]*class="session-tree-chevron" aria-hidden="true"><path[^>]*><\/path><\/svg><svg width="14" height="14"[^>]*class="session-tree-group-icon" aria-hidden="true"><path[^>]*><\/path><\/svg><span class="session-tree-group-name">app<\/span>/, "chevron and folder icon precede the name");
@@ -172,7 +172,7 @@ test("a collapsed group shows its running and unread counts and labelled actions
   assert.match(html, /aria-label="app actions" title="app actions" aria-haspopup="menu" aria-expanded="false"/);
 
   const expandedTree = render({ rows: [groupRow({ expanded: true, count: 1, running: 2, unread: 1 }), sessionRow(session("s1"))] });
-  assert.match(expandedTree, /<div aria-hidden="true" class="session-tree-group-card is-expanded is-current" style="top:0;height:56px"><span class="session-tree-group-stem"><\/span><\/div>/);
+  assert.match(expandedTree, /<div aria-hidden="true" class="session-tree-group-card is-expanded is-current" style="top:0;height:72px"><span class="session-tree-group-stem"><\/span><\/div>/);
   const expanded = rowMarkup(expandedTree, "group:/work/app");
   assert.match(expanded, /session-tree-group is-current/);
   assert.match(expanded, /class="session-tree-group-icon is-open"/);
@@ -195,7 +195,7 @@ test("a group's ⋯ shows its open menu; its + starts a session at once", () => 
 test("an idle session row shows its short time, branch and both actions", () => {
   const root = session("idle", { isWorktree: true, branch: "feat/rows" });
   const html = rowMarkup(render({ rows: [sessionRow(root)] }), "session:group:idle");
-  assert.match(html, /^<div class="session-tree-row session-tree-session" style="top:0;height:28px" data-row-key="session:group:idle">/);
+  assert.match(html, /^<div class="session-tree-row session-tree-session" style="top:0;height:36px" data-row-key="session:group:idle">/);
   // Nothing before the title: it gets the room; the time sits at the right.
   // A saved session's title is a real link to it (middle-click, Ctrl/Cmd-click).
   // The branch keeps the upstream icon and type; the tooltip keeps the ⑂ glyph.
@@ -360,7 +360,7 @@ test("a named project shows its name as plain text in its header, the path as th
 
 test("a project's rename swaps its header for a name field seeded with the name shown", () => {
   const html = rowMarkup(render({ rows: [groupRow({}, { name: "Thermal Models", customName: "Thermal Models" })], renamingProjectKey: "/work/app" }), "group:/work/app");
-  assert.match(html, /^<div class="session-tree-row session-tree-group is-current is-renaming" style="top:0;height:28px" data-row-key="group:\/work\/app">/);
+  assert.match(html, /^<div class="session-tree-row session-tree-group is-current is-renaming" style="top:0;height:36px" data-row-key="group:\/work\/app">/);
   assert.match(html, /<input class="session-tree-rename" aria-label="Project name" maxLength="80" value="Thermal Models"\/>/);
   assert.doesNotMatch(html, /session-tree-group-toggle|session-tree-group-actions/);
   // Another group, or none being renamed: the header as usual.
@@ -404,7 +404,7 @@ test("show more, empty groups, footer links and archive groups", () => {
   // Without sessions only a pin keeps a project listed once another one is current (#1476).
   assert.match(
     rowMarkup(html, "empty:/work/app"),
-    /style="top:78px;height:28px" data-row-key="empty:\/work\/app"><span class="session-tree-group-empty-label">No sessions yet<\/span><button type="button" class="session-tree-more-toggle">Pin to keep<\/button><\/div>/,
+    /style="top:96px;height:36px" data-row-key="empty:\/work\/app"><span class="session-tree-group-empty-label">No sessions yet<\/span><button type="button" class="session-tree-more-toggle">Pin to keep<\/button><\/div>/,
   );
   const pinnedEmpty = render({ rows: [{ kind: "group-empty", key: "empty:/work/app", project: { ...project, pinned: true } }] });
   assert.match(rowMarkup(pinnedEmpty, "empty:/work/app"), /No sessions yet<\/span><\/div>/);
@@ -458,10 +458,10 @@ test("loading replaces the rows; the empty label shows only without session, gro
 test("only rows near the viewport are mounted, plus the ones that must stay", () => {
   const rows = Array.from({ length: 200 }, (_, index) => sessionRow(session(`s${index}`)));
   const plain = render({ rows });
-  assert.match(plain, /<div class="session-tree-inner" style="height:5600px">/);
+  assert.match(plain, /<div class="session-tree-inner" style="height:7200px">/);
   const keys = renderedKeys(plain);
   // An unmeasured viewport counts as 600px, plus 240px of overscan below.
-  assert.equal(keys.length, Math.ceil((600 + 240) / 28));
+  assert.equal(keys.length, Math.ceil((600 + 240) / 36));
   assert.equal(keys[0], "session:group:s0");
 
   const kept = renderedKeys(render({
@@ -471,7 +471,7 @@ test("only rows near the viewport are mounted, plus the ones that must stay", ()
     confirmDeleteRootId: "s180",
   }));
   assert.deepEqual(kept.slice(-3), ["session:group:s120", "session:group:s150", "session:group:s180"]);
-  assert.match(render({ rows, renamingRootId: "s120" }), /style="top:3360px;height:28px" data-row-key="session:group:s120"/);
+  assert.match(render({ rows, renamingRootId: "s120" }), /style="top:4320px;height:36px" data-row-key="session:group:s120"/);
 });
 
 test("a reveal request keeps its row mounted", () => {
@@ -595,8 +595,8 @@ test("headers lead with their chevron, and every row's text starts in one column
   // One rhythm: session rows, every header (a project's, the pinned
   // section's, the archive's projects), the empty note and the footer are
   // one height, 28px (44px on a phone); only "show more" is shorter.
-  assert.deepEqual(SIDEBAR_ROW_HEIGHTS.desktop, { "pinned-header": 28, session: 28, "pinned-more": 26, group: 28, "group-more": 26, "group-empty": 28, spacer: 8, "footer-open": 28, "footer-archived": 28, "archive-group": 28 });
-  for (const [layout, height] of [["desktop", 28], ["mobile", 44]]) {
+  assert.deepEqual(SIDEBAR_ROW_HEIGHTS.desktop, { "pinned-header": 36, session: 36, "pinned-more": 32, group: 36, "group-more": 32, "group-empty": 36, spacer: 8, "footer-open": 36, "footer-archived": 36, "archive-group": 36 });
+  for (const [layout, height] of [["desktop", 36], ["mobile", 44]]) {
     for (const kind of ["session", "group", "pinned-header", "group-empty", "footer-open", "footer-archived", "archive-group"]) {
       assert.equal(SIDEBAR_ROW_HEIGHTS[layout][kind], height, `${layout} ${kind}`);
     }
@@ -616,7 +616,7 @@ test("group headers draw nothing for a drag while idle", () => {
   assert.match(html, /^<div class="session-tree">/);
   assert.doesNotMatch(html, /session-tree-drag-|session-tree-drop-line|is-group-dragging|is-drag-armed/);
   // Headers keep their markup: the drag adds listeners, no attributes (and never draggable="true").
-  assert.match(rowMarkup(html, "group:/work/b"), /^<div class="session-tree-row session-tree-group is-current" style="top:28px;height:28px" data-row-key="group:\/work\/b">/);
+  assert.match(rowMarkup(html, "group:/work/b"), /^<div class="session-tree-row session-tree-group is-current" style="top:36px;height:36px" data-row-key="group:\/work\/b">/);
   assert.doesNotMatch(html, /draggable/);
 });
 

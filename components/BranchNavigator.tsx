@@ -24,6 +24,8 @@ interface Props {
   hideInlineButton?: boolean;
   /** The session is running: the tree stays readable but branches cannot be switched */
   locked?: boolean;
+  /** When true, the caller renders BranchNavigatorPanel inside a shared top popover */
+  externalPanel?: boolean;
 }
 
 // Find the visible entry IDs on the path from root to activeLeafId.
@@ -146,7 +148,7 @@ function TreeNodeView({ node, activePathIds, depth, isLast, parentLines, onSelec
         style={{
           display: "flex",
           alignItems: "center",
-          height: 24,
+          height: 32,
           cursor: onSelect ? "pointer" : "default",
         }}
         onClick={onSelect ? () => onSelect(rep.entry.id) : undefined}
@@ -204,16 +206,17 @@ function TreeNodeView({ node, activePathIds, depth, isLast, parentLines, onSelec
         {/* Role badge */}
         {role && (
           <span style={{
-            fontSize: 9,
+            fontSize: 11,
+            fontWeight: 600,
             fontFamily: "var(--font-mono)",
             color: role === "user" ? "var(--accent)" : "var(--text-dim)",
             background: role === "user" ? "rgba(37,99,235,0.08)" : "var(--bg-hover)",
             border: `1px solid ${role === "user" ? "rgba(37,99,235,0.2)" : "var(--border)"}`,
-            borderRadius: 3,
-            padding: "0 4px",
-            marginRight: 5,
+            borderRadius: 4,
+            padding: "0 5px",
+            marginRight: 6,
             flexShrink: 0,
-            lineHeight: "16px",
+            lineHeight: "18px",
           }}>
             {role === "user" ? "U" : "A"}
           </span>
@@ -221,14 +224,14 @@ function TreeNodeView({ node, activePathIds, depth, isLast, parentLines, onSelec
 
         {/* Skipped indicator */}
         {skipped > 0 && (
-          <span style={{ fontSize: 10, color: "var(--text-dim)", marginRight: 5, flexShrink: 0 }}>
+          <span style={{ fontSize: 12, color: "var(--text-dim)", marginRight: 6, flexShrink: 0 }}>
             +{skipped}
           </span>
         )}
 
         {/* Label */}
         <span style={{
-          fontSize: 11,
+          fontSize: 13.5,
           color: isActive ? "var(--text)" : isOnPath ? "var(--text-muted)" : "var(--text-dim)",
           fontWeight: isActive ? 500 : 400,
           overflow: "hidden",
@@ -256,8 +259,73 @@ function TreeNodeView({ node, activePathIds, depth, isLast, parentLines, onSelec
     </div>
   );
 }
+export function BranchNavigatorPanel({
+  tree,
+  activeLeafId,
+  onLeafChange,
+  hasSession = true,
+  locked = false,
+}: {
+  tree: SessionTreeNode[];
+  activeLeafId: string | null;
+  onLeafChange: (leafId: string | null) => void;
+  hasSession?: boolean;
+  locked?: boolean;
+}) {
+  const { t } = useI18n();
+  const activePathIds = useMemo(
+    () => buildActivePath(tree, activeLeafId),
+    [tree, activeLeafId],
+  );
+  const handleSelect = useCallback((id: string) => {
+    onLeafChange(id);
+  }, [onLeafChange]);
+  const selectBranch = locked ? undefined : handleSelect;
 
-export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, containerRef, open: openProp, onToggle, hasSession, compact, hideInlineButton, locked = false }: Props) {
+  const noBranchReason = !hasSession
+    ? t("i18n.noActiveSession")
+    : !hasSessionBranches(tree)
+      ? t("i18n.noBranches")
+      : null;
+
+  const topLevel = selectTopLevelBranches(tree);
+  const hasContent = !noBranchReason && topLevel.length > 0;
+
+  return (
+    <div style={{ padding: "12px 16px 14px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, paddingBottom: 8, marginBottom: 6, borderBottom: "1px solid var(--border)" }}>
+        <strong style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text)" }}>{t("i18n.branches")}</strong>
+        {locked && (
+          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>
+            {t("i18n.branchesLockedWhileRunning")}
+          </span>
+        )}
+      </div>
+      {hasContent ? (
+        <div style={{ maxHeight: 320, overflowY: "auto" }}>
+          {topLevel.map((child, idx) => (
+            <TreeNodeView
+              key={child.entry.id}
+              node={child}
+              activePathIds={activePathIds}
+              depth={0}
+              isLast={idx === topLevel.length - 1}
+              parentLines={[]}
+              onSelect={selectBranch}
+            />
+          ))}
+        </div>
+      ) : (
+        <div style={{ padding: "10px 4px", fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
+          {noBranchReason}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, containerRef, open: openProp, onToggle, hasSession, compact, hideInlineButton, locked = false, externalPanel = false }: Props) {
   const { t } = useI18n();
   const [openInternal, setOpenInternal] = useState(false);
   const open = openProp !== undefined ? openProp : openInternal;
@@ -265,7 +333,7 @@ export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, cont
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   useEffect(() => {
-    if (!open || !inline) return;
+    if (!open || !inline || externalPanel) return;
     const anchor = containerRef?.current ?? btnRef.current;
     if (!anchor) return;
     const update = () => {
@@ -276,7 +344,7 @@ export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, cont
     const ro = new ResizeObserver(update);
     ro.observe(anchor);
     return () => ro.disconnect();
-  }, [open, inline, containerRef]);
+  }, [open, inline, containerRef, externalPanel]);
 
   const activePathIds = useMemo(
     () => buildActivePath(tree, activeLeafId),
@@ -337,7 +405,7 @@ export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, cont
           {branchIcon}
           {!compact && <span>{t("i18n.branches")}</span>}
         </button>
-        {open && dropdownPos && (
+        {!externalPanel && open && dropdownPos && (
           <div style={{
             position: "fixed",
             top: dropdownPos.top + 6,
