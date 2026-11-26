@@ -263,12 +263,12 @@ export function ToolDefinitionsPanel({ loading, tools, translate }: Props) {
         .tool-definitions-item code {
           max-width: 100%;
           color: inherit;
-          font-size: 11px;
+          font-size: 13.5px;
           font-weight: 600;
           overflow-wrap: anywhere;
         }
         .tool-definition-scroll {
-          padding: 14px 16px 20px;
+          padding: 14px 18px 20px;
         }
         .tool-definition-section + .tool-definition-section {
           margin-top: 18px;
@@ -280,7 +280,7 @@ export function ToolDefinitionsPanel({ loading, tools, translate }: Props) {
           gap: 8px;
           margin-bottom: 7px;
           color: var(--text-dim);
-          font-size: 11px;
+          font-size: 12.5px;
           font-weight: 600;
         }
         .tool-definition-section-label > span:last-child {
@@ -288,9 +288,9 @@ export function ToolDefinitionsPanel({ loading, tools, translate }: Props) {
           white-space: nowrap;
         }
         .tool-definition-description {
-          color: var(--text-muted);
-          font-size: 12px;
-          line-height: 1.55;
+          color: var(--text);
+          font-size: 14px;
+          line-height: 1.65;
           overflow-wrap: anywhere;
           white-space: pre-wrap;
         }
@@ -299,12 +299,12 @@ export function ToolDefinitionsPanel({ loading, tools, translate }: Props) {
         }
         .tool-definition-field {
           display: grid;
-          grid-template-columns: minmax(88px, 0.75fr) minmax(0, 1.5fr);
+          grid-template-columns: minmax(96px, 0.75fr) minmax(0, 1.5fr);
           gap: 12px;
-          padding: 9px 0;
+          padding: 10px 0;
           border-bottom: 1px solid var(--border);
-          font-size: 11px;
-          line-height: 1.45;
+          font-size: 13px;
+          line-height: 1.55;
         }
         .tool-definition-field-name {
           display: flex;
@@ -318,7 +318,7 @@ export function ToolDefinitionsPanel({ loading, tools, translate }: Props) {
         }
         .tool-definition-field-name span {
           color: var(--text-dim);
-          font-size: 10px;
+          font-size: 11.5px;
         }
         .tool-definition-field-name span.required {
           color: var(--accent);
@@ -343,19 +343,19 @@ export function ToolDefinitionsPanel({ loading, tools, translate }: Props) {
         .tool-definition-no-parameters {
           padding: 2px 0 10px;
           color: var(--text-dim);
-          font-size: 11px;
+          font-size: 13px;
         }
         .tool-definition-guidelines {
           margin: 0;
           padding-left: 18px;
           color: var(--text-muted);
-          font-size: 11px;
-          line-height: 1.5;
+          font-size: 13.5px;
+          line-height: 1.6;
         }
         .tool-definitions-empty {
           padding: 14px 12px;
           color: var(--text-muted);
-          font-size: 12px;
+          font-size: 14px;
           font-style: italic;
           overflow-wrap: anywhere;
         }

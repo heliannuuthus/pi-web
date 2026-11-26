@@ -293,6 +293,11 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
   });
   const [restoreAnchorReady, setRestoreAnchorReady] = useState(false);
 
+  const sessionInfoOpenTriggerRef = useRef<(() => void) | null>(null);
+  const handleSessionStatsPanelOpen = useCallback(() => {
+    sessionInfoOpenTriggerRef.current?.();
+    onSessionStatsPanelOpen?.();
+  }, [onSessionStatsPanelOpen]);
   const {
     loading, error, messages, activeToolResults, toolClocks, entryIds, messageKeys, liveUserEntryIds, historyCursor, hasEarlierMessages, earlierTurnCount, streamingStore,
     agentRunning, bashRunning, pendingBash, modelNames, modelList, modelError, missingCwd, canForkMissingCwd, modelScopeWarnings, isModelScopeActive, allModelList, modelThinkingLevels, modelThinkingLevelMaps, toolPreset, thinkingLevel,
@@ -319,7 +324,7 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
     loadContext, activeLeafId, scrollToBottom, scrollToMessage,
   } = useAgentSession({
     session, sessionRunning, newSessionCwd, newSessionDraftKey, initialNewSessionChoices, onNewSessionChoicesChange, onAgentEnd: wrappedOnAgentEnd, onSessionEnded, onToolEnd, onAttentionNeeded, onSessionCreated, onSessionForked, onSideSession,
-    modelsRefreshKey, chatInputRef, onBranchDataChange, onSystemPromptChange, onSystemToolsChange, onSystemInfoLoaderChange, onSessionStatsPanelOpen,
+    modelsRefreshKey, chatInputRef, onBranchDataChange, onSystemPromptChange, onSystemToolsChange, onSystemInfoLoaderChange, onSessionStatsPanelOpen: handleSessionStatsPanelOpen,
     onOpenSettings, onDebugSnapshotReaderChange, t,
     deferInitialScroll: Boolean(pendingScrollRestore),
   });
@@ -791,7 +796,8 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
       const userMessageTop = userMessage.getBoundingClientRect().top
         - containerTop
         + container.scrollTop;
-      const targetTop = Math.max(0, userMessageTop - 16);
+      const topInset = (typeof getComputedStyle === "function" ? parseFloat(getComputedStyle(container).paddingTop) : 0) || 16;
+      const targetTop = Math.max(0, userMessageTop - topInset);
       const contentEnd = spacer.getBoundingClientRect().top
         - containerTop
         + container.scrollTop;
@@ -918,6 +924,15 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
       draftKey={session?.id ?? newSessionDraftKey ?? undefined}
       cwd={session?.cwd ?? newSessionCwd}
       onAttachFiles={onAttachFiles}
+      showSessionRing
+      sessionStats={sessionStats}
+      contextUsage={contextUsage}
+      sessionProjectMeta={{
+        projectDir: session ? (session.projectRoot ?? session.cwd) : (newSessionCwd ?? null),
+        gitBranch: session?.branch ?? null,
+        gitWorktree: session?.isWorktree ? session.cwd : null,
+      }}
+      sessionInfoOpenTriggerRef={sessionInfoOpenTriggerRef}
     />
   );
 
@@ -940,7 +955,7 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
   return (
     <div
       className="chat-content relative flex h-full min-w-0 flex-col overflow-hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom)", "--chat-top-inset": panel ? "0px" : "var(--center-top-bar-height, calc(var(--top-bar-height) + env(safe-area-inset-top)))" } as React.CSSProperties}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -981,7 +996,7 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
       <div
         style={{
           position: "absolute",
-          top: 12,
+          top: "calc(var(--chat-top-inset, 0px) + 12px)",
           left: 0,
           right: isMobile ? 0 : CHAT_MINIMAP_WIDTH,
           zIndex: 40,
@@ -1005,12 +1020,17 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
         {!isEmptyNew && <>
         <div
           ref={scrollContainerRef}
+          data-chat-scroller="true"
           // The message list is the one place long output has to be dragged through,
           // so it shows its scrollbar instead of hiding it behind the minimap (#788).
           // A stable gutter keeps the centred column from shifting when a short
           // session grows past one screen.
-          className="scrollbar-subtle min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-4 [scrollbar-gutter:stable]"
-          style={{ visibility: pendingScrollRestore ? "hidden" : undefined }}
+          className="scrollbar-subtle min-w-0 flex-1 overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable]"
+          style={{
+            paddingTop: "calc(var(--chat-top-inset, 0px) + 16px)",
+            scrollPaddingTop: "calc(var(--chat-top-inset, 0px) + 16px)",
+            visibility: pendingScrollRestore ? "hidden" : undefined,
+          }}
         >
           <div style={{ minWidth: 0, padding: `0 ${CHAT_COLUMN_PADDING}px` }}>
             <div ref={messageContentRef} style={{ width: "100%", minWidth: 0, maxWidth: "var(--chat-content-max-width, 820px)", margin: "0 auto" }}>
@@ -1362,7 +1382,7 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
             .new-session-context in app/globals.css; the side padding and
             width are inline here). */}
         {isEmptyNew && (
-          <div className="new-session-hero" style={{ paddingLeft: 16, paddingRight: isMobile ? 16 : 52 }}>
+          <div className="new-session-hero" style={{ paddingTop: "var(--chat-top-inset, 0px)", paddingLeft: 16, paddingRight: isMobile ? 16 : 52 }}>
             <div className="new-session-hero-inner" style={{ maxWidth: "var(--chat-content-max-width, 820px)" }}>
               <div className="new-session-brand">
                 <Image src="/icons/apple-touch-icon.png" width={40} height={40} alt="" priority className="new-session-logo" />

@@ -13,8 +13,43 @@ await mkdir(artifacts, { recursive: true });
 const browser = await chromium.launch();
 
 function contrast(a, b) {
-  const luminance = (hex) => {
-    const digits = hex.length === 4 ? [...hex.slice(1)].map((digit) => digit + digit).join("") : hex.slice(1);
+  const luminance = (color) => {
+    const trimmed = color.trim();
+    const lab = trimmed.match(/^lab\(\s*([\d.]+)%?\s+([+-]?[\d.]+)\s+([+-]?[\d.]+)/i);
+    if (lab) {
+      const L = Number(lab[1]);
+      const la = Number(lab[2]);
+      const lb = Number(lab[3]);
+      const fy = (L + 16) / 116;
+      const fx = la / 500 + fy;
+      const fz = fy - lb / 200;
+      const d = 6 / 29;
+      const inv = (t) => (t > d ? t ** 3 : 3 * d * d * (t - 4 / 29));
+      // D50 -> D65 Bradford chromatic adaptation -> Linear sRGB luminance
+      const x50 = 0.96422 * inv(fx);
+      const y50 = 1.00000 * inv(fy);
+      const z50 = 0.82521 * inv(fz);
+      const r = Math.max(0, Math.min(1, +3.1338561 * x50 - 1.6168667 * y50 - 0.4906146 * z50));
+      const g = Math.max(0, Math.min(1, -0.9787684 * x50 + 1.9161415 * y50 + 0.0334540 * z50));
+      const bl = Math.max(0, Math.min(1, +0.0719453 * x50 - 0.2289914 * y50 + 1.4052427 * z50));
+      return r * 0.2126 + g * 0.7152 + bl * 0.0722;
+    }
+    const oklch = trimmed.match(/^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/i);
+    if (oklch) {
+      const L = Number(oklch[1]);
+      const C = Number(oklch[2]);
+      const rad = (Number(oklch[3]) * Math.PI) / 180;
+      const oa = C * Math.cos(rad);
+      const ob = C * Math.sin(rad);
+      const l = (L + 0.3963377774 * oa + 0.2158037573 * ob) ** 3;
+      const m = (L - 0.1055613458 * oa - 0.0638541728 * ob) ** 3;
+      const s = (L - 0.0894841775 * oa - 1.2914855480 * ob) ** 3;
+      const r = Math.max(0, Math.min(1, +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s));
+      const g = Math.max(0, Math.min(1, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s));
+      const bl = Math.max(0, Math.min(1, -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s));
+      return r * 0.2126 + g * 0.7152 + bl * 0.0722;
+    }
+    const digits = trimmed.length === 4 ? [...trimmed.slice(1)].map((digit) => digit + digit).join("") : trimmed.slice(1);
     const channels = digits.match(/../g).map((part) => {
       const value = parseInt(part, 16) / 255;
       return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;

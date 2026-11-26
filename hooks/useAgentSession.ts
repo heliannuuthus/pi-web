@@ -3254,7 +3254,7 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     }
   }, [cancelEventStreamGrace, clearSlashCommands, closeEvents, loadTools, maintainEventsConnected, setToolPresetState, syncLiveModel]);
 
-  const scrollToMessage = useCallback((element: HTMLElement, viewportOffset = 16) => {
+  const scrollToMessage = useCallback((element: HTMLElement, viewportOffset?: number) => {
     const container = scrollContainerRef.current;
     if (!container) return;
     if (liveFollowFrameRef.current !== null) {
@@ -3265,11 +3265,12 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     pendingScrollToUserRef.current = false;
     isNearBottomRef.current = false;
     setPromptAnchorActive(false);
+    const resolvedOffset = viewportOffset ?? ((typeof getComputedStyle === "function" ? parseFloat(getComputedStyle(container).paddingTop) : 0) || 16);
     container.scrollTo({
       top: element.getBoundingClientRect().top
         - container.getBoundingClientRect().top
         + container.scrollTop
-        - viewportOffset,
+        - resolvedOffset,
       behavior: "instant",
     });
     previousScrollTopRef.current = container.scrollTop;
@@ -3281,7 +3282,8 @@ export function useAgentSession(opts: UseAgentSessionOptions) {
     if (!container || !el) return;
     const elAbsTop = el.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
     const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
-    const targetTop = Math.min(Math.max(0, elAbsTop - 16), maxScrollTop);
+    const topInset = (typeof getComputedStyle === "function" ? parseFloat(getComputedStyle(container).paddingTop) : 0) || 16;
+    const targetTop = Math.min(Math.max(0, elAbsTop - topInset), maxScrollTop);
 
     if (liveFollowFrameRef.current !== null) {
       cancelAnimationFrame(liveFollowFrameRef.current);
