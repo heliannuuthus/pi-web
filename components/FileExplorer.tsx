@@ -401,7 +401,7 @@ export function TreeNode({
         <span
           data-hidden-reason={hidden}
           style={{
-            fontSize: 12,
+            fontSize: 13,
             color: hidden ? "var(--text-muted)" : "var(--text)",
             opacity: hidden ? HIDDEN_ENTRY_OPACITY : 1,
             overflow: "hidden",

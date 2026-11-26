@@ -1010,6 +1010,12 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
         <NoticeShelf notices={notices} floating onPauseChange={setNoticePaused} />
       </div>
 
+      <ExtensionStatusBar
+        statuses={extensionStatuses}
+        widgets={extensionWidgets}
+        onCommand={handleSend}
+        commandsDisabled={sessionBusy}
+      />
       <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
         {extensionDialog && (
           <ExtensionDialog key={extensionDialog.id} request={extensionDialog} waitingCount={waitingExtensionDialogCount} onRespond={respondToExtensionUi} />
@@ -1401,12 +1407,6 @@ export function ChatWindow({ session, searchTarget, onSearchTargetHandled, initi
           </div>
         )}
         {chatInputElement}
-        <ExtensionStatusBar
-          statuses={extensionStatuses}
-          widgets={extensionWidgets}
-          onCommand={handleSend}
-          commandsDisabled={sessionBusy}
-        />
       </div>
       {isEmptyNew && <div className="min-h-0 flex-1" />}
       {forkPickerOpen && (

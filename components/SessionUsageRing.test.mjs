@@ -41,7 +41,7 @@ test("computeUsageRingSegments keeps small token categories visibly represented 
   }
 });
 
-test("SessionUsageRing SSR markup exposes the accessible Session info button and multi-color SVG ring", () => {
+test("SessionUsageRing SSR markup exposes the accessible Session info button, context fill ring, and percentage", () => {
   const html = renderToStaticMarkup(
     React.createElement(
       I18nProvider,
@@ -64,8 +64,7 @@ test("SessionUsageRing SSR markup exposes the accessible Session info button and
   );
   assert.match(html, /aria-label="Session info"/);
   assert.match(html, /class="session-usage-ring-btn"/);
-  assert.match(html, /var\(--ring-input/);
-  assert.match(html, /var\(--ring-cache-read/);
-  assert.match(html, /var\(--ring-cache-write/);
-  assert.match(html, /var\(--ring-output/);
+  assert.match(html, /class="session-usage-ring-pct"/);
+  assert.match(html, />18%<\/span>/);
+  assert.match(html, /stroke-dasharray="8\.67 47\.12"/);
 });

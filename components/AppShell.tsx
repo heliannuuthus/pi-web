@@ -15,7 +15,7 @@ import { movePanelTab, orderPanelTabs } from "@/lib/panel-tab-order";
 import { openFileTab, saveFileViewerState, saveParkedFileViewerState, switchFileWorkspace, type ParkedFileWorkspace } from "./file-tab-state";
 import { SettingsPanel, SettingsSectionIcon } from "./SettingsPanel";
 import { ProjectTrustDialog, type ProjectTrustFailure } from "./ProjectTrustDialog";
-import { BranchNavigator, hasSessionBranches } from "./BranchNavigator";
+import { BranchNavigator, BranchNavigatorPanel, hasSessionBranches } from "./BranchNavigator";
 import { SystemPromptPanel } from "./SystemPromptPanel";
 import { ToolDefinitionsPanel } from "./ToolDefinitionsPanel";
 import { AgentMiniStrip } from "./AgentMiniStrip";
@@ -419,6 +419,7 @@ export function AppShell() {
   // Single active panel — only one dropdown open at a time
   const [activeTopPanel, setActiveTopPanel] = useState<"agents" | "branches" | "system" | "tools" | "debug" | null>(null);
   const [topPanelPos, setTopPanelPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const topPopoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!sessionHasBranches) {
@@ -435,6 +436,26 @@ export function AppShell() {
   useEffect(() => {
     if (rightPanelFullWidth) setActiveTopPanel(null);
   }, [rightPanelFullWidth]);
+
+  useEffect(() => {
+    if (!activeTopPanel) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (topPopoverRef.current?.contains(target)) return;
+      if (topBarRef.current?.contains(target)) return;
+      setActiveTopPanel(null);
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setActiveTopPanel(null);
+    };
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeTopPanel]);
 
   const toggleTopPanel = useCallback((
     panel: "agents" | "branches" | "system" | "tools" | "debug",
@@ -551,7 +572,7 @@ export function AppShell() {
       const centerRect = center.getBoundingClientRect();
       const barHeight = anchor.offsetHeight;
       const top = Math.round(centerRect.top + barHeight + 6);
-      const horizontalInset = isMobile ? 8 : 12;
+      const horizontalInset = isMobile ? 10 : 24;
       const availWidth = Math.max(200, Math.round(centerRect.width - horizontalInset * 2));
       if (activeTopPanel === "agents") {
         const panelWidth = Math.min(AGENT_PANEL_WIDTH, availWidth);
@@ -565,10 +586,11 @@ export function AppShell() {
         });
         return;
       }
+      const panelWidth = Math.min(820, availWidth);
       setTopPanelPos({
         top,
-        left: Math.round(centerRect.left + horizontalInset),
-        width: availWidth,
+        left: Math.round(centerRect.left + (centerRect.width - panelWidth) / 2),
+        width: panelWidth,
       });
     };
     update();
@@ -2073,6 +2095,7 @@ export function AppShell() {
                 open={activeTopPanel === "branches"}
                 onToggle={() => toggleTopPanel("branches")}
                 hasSession
+                externalPanel
               />
             )}
             {systemButton}
@@ -2109,6 +2132,38 @@ export function AppShell() {
           <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6zM12 20v-9" />
           <path d="M6.5 9C4.6 8.8 3 7.1 3 5M6 13H2M3 21c0-2.1 1.7-3.9 3.8-4M21 5c0 2.1-1.6 3.8-3.5 4M22 13h-4M17.2 17c2.1.1 3.8 1.9 3.8 4" />
         </svg>
+      </button>
+    );
+  };
+
+  const renderSoundToggleButton = (mobile: boolean) => {
+    if (!showChat) return null;
+    return (
+      <button
+        type="button"
+        className="apple-glass-icon-btn"
+        onClick={onSoundToggle}
+        title={translate(soundEnabled ? "chat.disableSound" : "chat.enableSound")}
+        aria-label={translate(soundEnabled ? "chat.disableSound" : "chat.enableSound")}
+        style={{
+          opacity: soundEnabled ? 1 : 0.55,
+          ...(mobile ? { width: TOP_BAR_ICON_BUTTON_SIZE, height: TOP_BAR_ICON_BUTTON_SIZE } : {}),
+        }}
+        data-mobile-toolbar-action={mobile ? "sound" : undefined}
+      >
+        {soundEnabled ? (
+          <svg width={mobile ? 16 : 13} height={mobile ? 16 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-dim)", flexShrink: 0 }} aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+        ) : (
+          <svg width={mobile ? 16 : 13} height={mobile ? 16 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-dim)", flexShrink: 0 }} aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <line x1="23" y1="9" x2="17" y2="15" />
+            <line x1="17" y1="9" x2="23" y2="15" />
+          </svg>
+        )}
       </button>
     );
   };
@@ -2284,6 +2339,7 @@ export function AppShell() {
               )}
               {!isNarrowMobile && renderChatToolbarActions(true)}
               {!isNarrowMobile && renderDebugButton(true)}
+              {!isNarrowMobile && renderSoundToggleButton(true)}
               <div style={{ flex: 1, minWidth: 0 }} />
               {renderMainFileToggle(true)}
               {isNarrowMobile && mobileToolbarMoreOpen && (
@@ -2316,6 +2372,7 @@ export function AppShell() {
                 >
                   {renderChatToolbarActions(true)}
                   {renderDebugButton(true)}
+                  {renderSoundToggleButton(true)}
                 </div>
               )}
             </div>
@@ -2325,24 +2382,10 @@ export function AppShell() {
               {renderProjectTrustWarning(false)}
               {renderChatToolbarActions(false)}
               {renderDebugButton(false)}
+              {renderSoundToggleButton(false)}
             </>
           )}
           {!isMobile && renderMainFileToggle(false)}
-          {isMobile && sessionHasBranches && (
-            <BranchNavigator
-              tree={branchTree}
-              activeLeafId={branchActiveLeafId}
-              onLeafChange={handleBranchLeafChange}
-              locked={branchSwitchLocked}
-              inline
-              compact
-              containerRef={topBarRef}
-              open={activeTopPanel === "branches"}
-              onToggle={() => toggleTopPanel("branches")}
-              hasSession={showChat}
-              hideInlineButton
-            />
-          )}
 
         </div>
         {agentStripMembers && activeSessionFamily && selectedSession && activeTopPanel !== "agents" && (
@@ -2362,6 +2405,7 @@ export function AppShell() {
           {/* Top panel dropdown — shared, only one active at a time */}
           {activeTopPanel && topPanelPos && (
             <div
+              ref={topPopoverRef}
               key={activeTopPanel}
               className="app-top-popover"
               style={{
@@ -2371,12 +2415,7 @@ export function AppShell() {
               width: topPanelPos.width,
               maxHeight: `calc(100dvh - ${topPanelPos.top + 12}px)`,
               overflowY: "auto",
-              borderRadius: 16,
-              border: "1px solid var(--glass-rim)",
-              boxShadow: "0 18px 44px -12px rgba(15, 23, 42, 0.18), 0 4px 12px -4px rgba(15, 23, 42, 0.08)",
-              background: "color-mix(in oklab, var(--bg-panel) 94%, var(--bg))",
-              backdropFilter: "blur(22px) saturate(185%)",
-              WebkitBackdropFilter: "blur(22px) saturate(185%)",
+              borderRadius: 14,
               zIndex: 500,
             }}>
               {activeTopPanel === "agents" && activeSessionFamily && selectedSession && (
@@ -2395,6 +2434,15 @@ export function AppShell() {
                   onToggleSubagentTab={handleToggleSubagentTab}
                   onNewSideChat={() => handleNewSideChat(activeSessionFamily.root.id)}
                   onDeleteSideChat={(sessionId) => handleDeleteSideChat(sessionId, activeSessionFamily.root)}
+                />
+              )}
+              {activeTopPanel === "branches" && (
+                <BranchNavigatorPanel
+                  tree={branchTree}
+                  activeLeafId={branchActiveLeafId}
+                  onLeafChange={handleBranchLeafChange}
+                  hasSession={showChat}
+                  locked={branchSwitchLocked}
                 />
               )}
               {activeTopPanel === "system" && (

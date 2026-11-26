@@ -26,7 +26,8 @@
   color: var(--text);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
   font-size: 12px;
-  animation: sidebar-menu-in 0.12s ease-out;
+  transform-origin: top center;
+  animation: sidebar-menu-in 150ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 .sidebar-menu:focus {
@@ -36,11 +37,11 @@
 @keyframes sidebar-menu-in {
   from {
     opacity: 0;
-    transform: translateY(-3px);
+    transform: translate3d(0, -4px, 0) scale(0.96);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
@@ -60,6 +61,7 @@
   font-size: 12px;
   text-align: left;
   cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1));
 }
 
 .sidebar-menu-item:focus {
@@ -69,6 +71,10 @@
 .sidebar-menu-item:not([aria-disabled="true"]):hover,
 .sidebar-menu-item:focus-visible {
   background: var(--bg-hover);
+}
+
+.sidebar-menu-item:not([aria-disabled="true"]):active {
+  transform: scale(0.985);
 }
 
 .sidebar-menu-item[aria-disabled="true"] {
@@ -426,7 +432,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
-  animation: sidebar-sheet-fade 0.12s ease-out;
+  animation: sidebar-sheet-fade 200ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -445,7 +451,7 @@
   color: var(--text);
   box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.12);
   font-size: 15px;
-  animation: sidebar-sheet-in 0.12s ease-out;
+  animation: sidebar-sheet-in 260ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1)) both;
 }
 
 .sidebar-sheet:focus {
@@ -590,16 +596,16 @@ html[data-keyboard-open] .sidebar-sheet {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   font-size: 12px;
   pointer-events: auto;
-  animation: sidebar-toast-in 0.16s ease-out;
+  animation: sidebar-toast-in 200ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 @keyframes sidebar-toast-in {
   from {
-    transform: translateY(6px);
+    transform: translate3d(0, 8px, 0) scale(0.97);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0) scale(1);
     opacity: 1;
   }
 }
@@ -710,6 +716,9 @@ html[data-keyboard-open] .sidebar-sheet {
   .sidebar-sheet-backdrop,
   .sidebar-toast {
     animation: none;
+  }
+  .sidebar-menu-item {
+    transition: none;
   }
 }
 
