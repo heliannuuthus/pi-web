@@ -665,19 +665,19 @@ export function AssistantMessageHeader({ modelName, estimatedTokens = 0, tps = n
   const { t } = useI18n();
   const bg = tps !== null ? (tps >= 50 ? "#53b3cb" : tps >= 30 ? "#9bc53d" : tps >= 15 ? "#f9c22e" : "#e01a4f") : undefined;
   return (
-    <div style={{ fontSize: 11, lineHeight: 1.5, minHeight: "calc(1.5em + 2px)", color: "var(--text-dim)", marginBottom: 4, display: "flex", alignItems: "center", gap: 6, fontVariantNumeric: "tabular-nums" }}>
+    <div style={{ fontSize: "calc(12.5px + var(--chat-font-size-offset, 0px))", lineHeight: 1.5, minHeight: "calc(1.5em + 2px)", color: "var(--text-muted)", marginBottom: 5, display: "flex", alignItems: "center", gap: 6, fontVariantNumeric: "tabular-nums" }}>
       {modelName && <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{modelName}</span>}
       {estimatedTokens > 0 && (
         <span style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, whiteSpace: "nowrap", color: "var(--text)" }} title={t("i18n.estimatedTokens")}>
-          <span style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 11, fontWeight: 400 }}>
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+          <span style={{ display: "flex", alignItems: "center", gap: 2, fontSize: "calc(12px + var(--chat-font-size-offset, 0px))", fontWeight: 400 }}>
+            <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="1.5" x2="5" y2="8.5" /><polyline points="2 6 5 8.5 8 6" />
             </svg>
             <span>{estimatedTokens}</span>
           </span>
           {tps !== null && (
             // Room for `99.9 t/s` plus a pixel of glyph rounding; a faster rate widens it.
-            <span style={{ marginLeft: 6, padding: "1px 6px", minWidth: "calc(8ch + 1px)", boxSizing: "content-box", textAlign: "center", borderRadius: 4, background: bg, color: "#fff", fontSize: 11, fontWeight: 400 }}>
+            <span style={{ marginLeft: 6, padding: "1px 6px", minWidth: "calc(8ch + 1px)", boxSizing: "content-box", textAlign: "center", borderRadius: 4, background: bg, color: "#fff", fontSize: "calc(11.5px + var(--chat-font-size-offset, 0px))", fontWeight: 500 }}>
               {tps.toFixed(1)} t/s
             </span>
           )}
@@ -968,7 +968,7 @@ function AssistantMessageView({
         {stats.length > 0 && !isStreaming && (
           // One item per count: a single space at 11px ran them together. The
           // spaces stay in the text for copying; the flex gap draws the room.
-          <div style={{ display: "flex", flexWrap: "wrap", columnGap: 7, fontSize: 11, color: "var(--text-dim)", fontVariantNumeric: "tabular-nums" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", columnGap: 8, fontSize: "calc(12px + var(--chat-font-size-offset, 0px))", color: "var(--text-muted)", fontVariantNumeric: "tabular-nums" }}>
             {stats.map((part, index) => (
               <Fragment key={index}>{index > 0 && " "}<UsagePart part={part} /></Fragment>
             ))}
@@ -985,7 +985,7 @@ function AssistantMessageView({
               borderRadius: 5,
               color: copied ? "var(--accent)" : "var(--text-dim)",
               cursor: "pointer",
-              fontSize: 11, fontWeight: 400,
+              fontSize: "calc(12px + var(--chat-font-size-offset, 0px))", fontWeight: 400,
               whiteSpace: "nowrap",
               opacity: hovered ? 1 : 0,
               pointerEvents: hovered ? "auto" : "none",
@@ -1119,13 +1119,13 @@ export function ThinkingBlock({ block, duration, sessionId, entryId, blockIndex 
   return (
     <div style={{
       display: "flex", alignItems: "flex-start", gap: 6, minWidth: 0,
-      border: "1px solid var(--border)",
-      borderRadius: 7,
-      padding: "6px 10px",
-      background: "var(--bg)",
-      fontFamily: "var(--font-mono)",
-      fontSize: "calc(11px + var(--chat-font-size-offset, 0px))",
-      lineHeight: 1.5,
+      border: "1px solid color-mix(in oklab, var(--border) 62%, transparent)",
+      borderRadius: 8,
+      padding: "7px 11px",
+      background: "color-mix(in oklab, var(--bg-panel) 42%, var(--bg))",
+      fontFamily: "var(--font-ui)",
+      fontSize: "calc(13px + var(--chat-font-size-offset, 0px))",
+      lineHeight: 1.62,
     }}>
       <button
         type="button"
@@ -1144,7 +1144,7 @@ export function ThinkingBlock({ block, duration, sessionId, entryId, blockIndex 
           padding: 0,
           background: "transparent",
           border: "none",
-          color: "var(--text-muted)",
+          color: "var(--text-thinking, var(--text-dim))",
           cursor: "pointer",
           font: "inherit",
           textAlign: "left",
@@ -1162,7 +1162,7 @@ export function ThinkingBlock({ block, duration, sessionId, entryId, blockIndex 
           style={{
             flex: 1,
             minWidth: 0,
-            color: error ? "#f87171" : "var(--text-muted)",
+            color: error ? "#f87171" : "var(--text-thinking, var(--text-dim))",
             whiteSpace: "pre-wrap",
             overflowWrap: "anywhere",
           }}
@@ -1217,7 +1217,7 @@ function ToolClockTime({ clock }: { clock: ToolClock }) {
   }, [running]);
   const ms = toolClockMs(clock, now);
   if (ms < TOOL_DURATION_MIN_MS) return null;
-  return <span style={{ fontSize: 11, color: "var(--text-dim)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{formatToolDuration(ms)}</span>;
+  return <span style={{ fontSize: "calc(12px + var(--chat-font-size-offset, 0px))", color: "var(--text-dim)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{formatToolDuration(ms)}</span>;
 }
 
 // `resultFooter` is drawn under the result, so only while the card is expanded:
@@ -1291,7 +1291,7 @@ function ToolCallBlock({ block, result, notRun, duration, clock, onOpenSubagent,
       style={{
         borderRadius: 7,
         overflow: "hidden",
-        fontSize: 12,
+        fontSize: "calc(13px + var(--chat-font-size-offset, 0px))",
         border: isError ? "1px solid rgba(248,113,113,0.45)" : "1px solid rgba(34,197,94,0.25)",
         background: isError ? "rgba(248,113,113,0.05)" : "rgba(34,197,94,0.04)",
       }}
@@ -1303,21 +1303,21 @@ function ToolCallBlock({ block, result, notRun, duration, clock, onOpenSubagent,
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 7,
+            gap: 8,
             flex: 1,
             minWidth: 0,
-            padding: "6px 10px",
+            padding: "7px 12px",
             background: "none",
             border: "none",
             color: "var(--text-muted)",
             cursor: "pointer",
-            fontSize: 12,
+            fontSize: "calc(13px + var(--chat-font-size-offset, 0px))",
             textAlign: "left",
           }}
         >
           <span
             title={mcpLabel ? block.toolName : undefined}
-            style={{ color: isError ? "#f87171" : "#16a34a", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: 11, flexShrink: 0 }}
+            style={{ color: isError ? "#f87171" : "#16a34a", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "calc(13px + var(--chat-font-size-offset, 0px))", flexShrink: 0 }}
           >
             {mcpLabel ? (
               <>
@@ -1326,18 +1326,18 @@ function ToolCallBlock({ block, result, notRun, duration, clock, onOpenSubagent,
               </>
             ) : block.toolName}
           </span>
-          <span style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+          <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "calc(13px + var(--chat-font-size-offset, 0px))", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
             {isStreamingInput
               ? t("chat.generatingToolInput")
               : (patchLabel ?? (codemode ? codemodeScriptPreview(codemode.code) : toolInputPreview(block.input, resultPatchPath, block.toolName)))}
           </span>
           {codemodeCallCount > 0 && (
-            <span style={{ fontSize: 11, color: "var(--text-dim)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+            <span style={{ fontSize: "calc(12px + var(--chat-font-size-offset, 0px))", color: "var(--text-muted)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
               {codemodeCallCount === 1 ? t("codemode.callCountOne") : t("codemode.callCount", { count: codemodeCallCount })}
             </span>
           )}
           {duration !== undefined ? (
-            <span style={{ fontSize: 11, color: "var(--text-dim)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{formatToolDuration(duration)}</span>
+            <span style={{ fontSize: "calc(12px + var(--chat-font-size-offset, 0px))", color: "var(--text-dim)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{formatToolDuration(duration)}</span>
           ) : clock && (
             // Keyed by the start: a reconnect's replayed start gives a new one, and a stale tick would count from it.
             <ToolClockTime key={"startedAt" in clock ? clock.startedAt : "ended"} clock={clock} />

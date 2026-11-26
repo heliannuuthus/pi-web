@@ -37,6 +37,8 @@ import { useFontPreferences } from "@/hooks/useFontPreferences";
 import type { ToolPreset } from "@/lib/tool-presets";
 import { SelectorRow } from "./SelectorRow";
 import { ModelSelector, type ModelSelectorOption } from "./ModelSelector";
+import type { SessionStatsInfo } from "@/lib/pi-types";
+import { SessionUsageRing, type SessionUsageContextInfo, type SessionUsageProjectMeta } from "./SessionUsageRing";
 
 export { filterModelOptions } from "./ModelSelector";
 
@@ -118,6 +120,11 @@ interface Props {
   cwd?: string | null;
   /** Files picked with the attach button, handled like files dropped onto the chat. Without it the button takes images only. */
   onAttachFiles?: (files: File[]) => void;
+  showSessionRing?: boolean;
+  sessionStats?: SessionStatsInfo | null;
+  contextUsage?: SessionUsageContextInfo | null;
+  sessionProjectMeta?: SessionUsageProjectMeta | null;
+  sessionInfoOpenTriggerRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 export interface ChatInputHandle {
@@ -763,6 +770,11 @@ export const ChatInput = memo(forwardRef<ChatInputHandle, Props>(function ChatIn
   draftKey,
   cwd,
   onAttachFiles,
+  showSessionRing = false,
+  sessionStats,
+  contextUsage,
+  sessionProjectMeta,
+  sessionInfoOpenTriggerRef,
   compact = false,
 }: Props, ref) {
   const { t } = useI18n();
@@ -2693,13 +2705,20 @@ export const ChatInput = memo(forwardRef<ChatInputHandle, Props>(function ChatIn
           {!isMobile && <div style={{ flex: 1 }} />}
 
           {/* RIGHT: thinking + tools preset + compact + sound (idle) | Stop + sound (streaming) */}
+          <div style={{
+            flex: "0 0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 2,
+            marginLeft: isMobile ? 0 : "auto",
+          }}>
           <div ref={controlsMenuRef} style={{
             flex: "0 0 auto",
             display: "flex",
             alignItems: "center",
             justifyContent: "flex-end",
             position: "relative",
-            marginLeft: isMobile ? 0 : "auto",
           }}>
             {isMobile && (
               <button
@@ -3101,6 +3120,17 @@ export const ChatInput = memo(forwardRef<ChatInputHandle, Props>(function ChatIn
               </button>
             )}
             </div>
+          </div>
+          {showSessionRing && (
+            <SessionUsageRing
+              sessionStats={sessionStats}
+              contextUsage={contextUsage}
+              projectMeta={sessionProjectMeta}
+              controlSize={controlSize}
+              isMobile={isMobile}
+              openTriggerRef={sessionInfoOpenTriggerRef}
+            />
+          )}
           </div>
 
         </div>}

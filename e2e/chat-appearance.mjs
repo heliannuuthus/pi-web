@@ -50,7 +50,7 @@ export async function checkChatAppearance(page) {
 
   await openSettings();
   assert.equal(await width.inputValue(), "820");
-  assert.equal(await fontSize.inputValue(), "14");
+  assert.equal(await fontSize.inputValue(), "16");
   await width.press("End");
   await closeSettings();
   const draft = "Existing drafts resize when the available width or the reading font changes. ".repeat(6);

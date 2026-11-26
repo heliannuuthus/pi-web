@@ -15,7 +15,7 @@ test("chat width validation preserves the default and supported range", () => {
 
 test("chat font size preserves the default and bounds stored or supplied values", () => {
   for (const value of [undefined, null, "invalid", Infinity, NaN]) {
-    assert.equal(clampChatContentFontSize(value), 14);
+    assert.equal(clampChatContentFontSize(value), 16);
   }
   assert.equal(clampChatContentFontSize(8), 12);
   assert.equal(clampChatContentFontSize("18"), 18);
@@ -23,10 +23,10 @@ test("chat font size preserves the default and bounds stored or supplied values"
   assert.equal(clampChatContentFontSize(30), 24);
 });
 
-test("the terminal keeps 13px at the default chat size and moves with the slider", () => {
-  for (const value of [undefined, null, "invalid", 14]) assert.equal(terminalFontSize(value), 13);
-  assert.equal(terminalFontSize(12), 11);
-  assert.equal(terminalFontSize(18), 17);
-  assert.equal(terminalFontSize(24), 23);
-  assert.equal(terminalFontSize(30), 23);
+test("the terminal keeps 14px at the default chat size and moves with the slider", () => {
+  for (const value of [undefined, null, "invalid", 16]) assert.equal(terminalFontSize(value), 14);
+  assert.equal(terminalFontSize(12), 10);
+  assert.equal(terminalFontSize(18), 16);
+  assert.equal(terminalFontSize(24), 22);
+  assert.equal(terminalFontSize(30), 22);
 });

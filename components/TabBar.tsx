@@ -47,7 +47,7 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onReorderTa
         // of the bar (--top-bar-height), squeezing the tabs or clipping their tops (#1225).
         display: "flex",
         alignItems: "stretch",
-        background: "var(--bg-panel)",
+        background: "transparent",
         overflowX: "auto",
         overflowY: "hidden",
         flexShrink: 0,
@@ -120,20 +120,25 @@ export function TabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onReorderTa
               display: "flex",
               alignItems: "center",
               gap: 6,
-              paddingLeft: 12,
-              paddingRight: 6,
-              borderRight: "1px solid var(--border)",
-              background: isActive ? "var(--bg)" : "var(--bg-panel)",
+              margin: "5px 2px",
+              paddingLeft: 11,
+              paddingRight: 5,
+              borderRadius: 999,
+              background: isActive ? "var(--seg-thumb-bg)" : "transparent",
               cursor: "pointer",
-              fontSize: 12,
+              fontSize: 12.5,
               color: isActive ? "var(--text)" : "var(--text-muted)",
               whiteSpace: "nowrap",
               maxWidth: 180,
-              minWidth: 80,
+              minWidth: 76,
               flexShrink: 0,
               userSelect: "none",
-              transition: "background 0.1s, color 0.1s",
-              boxShadow: dropTarget?.id === tab.id ? `inset ${dropTarget.after ? "-2px" : "2px"} 0 var(--accent)` : undefined,
+              transition: "background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease",
+              boxShadow: dropTarget?.id === tab.id
+                ? `inset ${dropTarget.after ? "-2px" : "2px"} 0 var(--accent)`
+                : isActive
+                  ? "var(--seg-thumb-shadow)"
+                  : undefined,
             }}
           >
             <span style={{ flexShrink: 0, opacity: isActive ? 1 : 0.7, display: "flex", alignItems: "center" }}>

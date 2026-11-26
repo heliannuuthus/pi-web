@@ -20,6 +20,7 @@ import { MAX_PROJECT_NAME_LENGTH, type ProjectMovePosition } from "@/lib/session
 import {
   PINNED_MORE_KEY,
   getRowOffsets,
+  groupBlocks,
   getVisibleRowIndices,
   revealScrollTop,
   revealStep,
@@ -35,11 +36,14 @@ import { skillExpansionToCommand } from "@/lib/slash-display";
 import { useGroupDrag, type GroupDragHandlers } from "@/hooks/useGroupDrag";
 import { useI18n } from "@/hooks/useI18n";
 import { useScrollbarVisibility } from "@/hooks/useScrollbarVisibility";
+import { prefersReducedMotion } from "@/hooks/useSidebarMotion";
 import type { SidebarMenuAnchor } from "./SidebarMenu";
 import {
   ArchiveIcon,
   BranchIcon,
   ChevronIcon,
+  FolderIcon,
+  FolderOpenIcon,
   FolderPlusIcon,
   MoreIcon,
   PinIcon,
@@ -243,8 +247,78 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
     return () => observer.disconnect();
   }, []);
 
+  const [treeMotion, setTreeMotion] = useState<TreeMotionState | null>(null);
+  const motionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const treeSnapshotRef = useRef<{
+    rows: readonly SidebarRow[];
+    offsets: readonly number[];
+    visibleIndices: readonly number[];
+    visibleGroupCards: readonly { key: string; top: number; height: number; current: boolean }[];
+    renderedCardKeys: readonly string[];
+  } | null>(null);
+
+  const startTreeMotion = useCallback(() => {
+    if (prefersReducedMotion()) return;
+    const snap = treeSnapshotRef.current;
+    if (!snap) return;
+    const prevRowKeys = new Set(snap.rows.map((row) => row.key));
+    const prevCardKeys = new Set(snap.renderedCardKeys);
+    const prevCards = new Map<string, LeavingCard>();
+    for (const card of snap.visibleGroupCards) {
+      const leavingRows: LeavingCardRow[] = [];
+      for (const idx of snap.visibleIndices) {
+        const row = snap.rows[idx];
+        if (!row) continue;
+        const top = snap.offsets[idx];
+        const height = snap.offsets[idx + 1] - top;
+        if (row.kind === "session" && row.context === "group" && row.project?.key === card.key) {
+          leavingRows.push({
+            key: row.key,
+            offsetTop: top - card.top,
+            height,
+            title: sessionRowTitle(row.family.root),
+            selected: row.status.selected,
+            isMore: false,
+          });
+        } else if (row.kind === "group-more" && row.projectKey === card.key) {
+          leavingRows.push({
+            key: row.key,
+            offsetTop: top - card.top,
+            height,
+            title: row.hidden > 0 ? t("sidebar.showMore", { count: row.hidden }) : t("sidebar.showLess"),
+            selected: false,
+            isMore: true,
+          });
+        } else if (row.kind === "group-empty" && row.project.key === card.key) {
+          leavingRows.push({
+            key: row.key,
+            offsetTop: top - card.top,
+            height,
+            title: t("sidebar.noLiveSessions"),
+            selected: false,
+            isMore: true,
+          });
+        }
+      }
+      prevCards.set(card.key, {
+        key: card.key,
+        top: card.top,
+        height: card.height,
+        current: card.current,
+        rows: leavingRows,
+      });
+    }
+    if (motionTimerRef.current !== null) clearTimeout(motionTimerRef.current);
+    setTreeMotion({ prevRowKeys, prevCardKeys, prevCards });
+    motionTimerRef.current = setTimeout(() => {
+      motionTimerRef.current = null;
+      setTreeMotion(null);
+    }, SESSION_TREE_MOTION_MS + SESSION_TREE_MOTION_GRACE_MS);
+  }, [t]);
+
   useEffect(() => () => {
     if (scrollFrameRef.current !== null) cancelAnimationFrame(scrollFrameRef.current);
+    if (motionTimerRef.current !== null) clearTimeout(motionTimerRef.current);
   }, []);
 
   useEffect(() => {
@@ -284,7 +358,10 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
     innerRef,
     treeRef,
     ghostRef,
-    onMove: (projectKey, anchorKey, position) => handlersRef.current.onMoveGroup?.(projectKey, anchorKey, position),
+    onMove: (projectKey, anchorKey, position) => {
+      startTreeMotion();
+      handlersRef.current.onMoveGroup?.(projectKey, anchorKey, position);
+    },
   });
   const dragView = groupDrag.view;
   // The header holding the pointer stays mounted while auto-scroll moves it away.
@@ -329,9 +406,10 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
     const keyboard = focus && button.matches(":focus-visible");
     const fallbackKey = key === PINNED_MORE_KEY ? "pinned-header" : `group:${key}`;
     pendingMoreRef.current = { rowKey, fallbackKey, focus, scroll: action === "less" || keyboard };
+    startTreeMotion();
     if (action === "more") handlersRef.current.onShowMore(key);
     else handlersRef.current.onShowLess(key);
-  }, []);
+  }, [startTreeMotion]);
   useLayoutEffect(() => {
     const pending = pendingMoreRef.current;
     if (!pending) return;
@@ -410,9 +488,118 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
   const ghostProject = dragView?.phase === "dragging"
     ? rows.find((row): row is Extract<SidebarRow, { kind: "group" }> => row.kind === "group" && row.project.key === dragView.projectKey)?.project ?? null
     : null;
+  const visibleGroupCards = useMemo(() => {
+    if (loading) return [];
+    const blocks = groupBlocks(rows, offsets);
+    if (blocks.length === 0) return [];
+    const groupMeta = new Map<string, { expanded: boolean; current: boolean; hasChildren: boolean }>();
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index];
+      if (row.kind !== "group") continue;
+      const next = rows[index + 1];
+      const hasChildren = Boolean(
+        row.expanded && next && (next.kind === "group-more" || next.kind === "group-empty" || (next.kind === "session" && next.context === "group")),
+      );
+      groupMeta.set(row.project.key, { expanded: row.expanded, current: row.project.current, hasChildren });
+    }
+    const effectiveHeight = viewportHeight > 0 ? viewportHeight : 600;
+    const windowStart = Math.max(0, scrollTop) - OVERSCAN_PX;
+    const windowEnd = Math.max(0, scrollTop) + effectiveHeight + OVERSCAN_PX;
+    return blocks.flatMap((block) => {
+      const meta = groupMeta.get(block.key);
+      if (!meta || !meta.hasChildren) return [];
+      const padBottom = block.gapBelow >= 4 ? 4 : 0;
+      const cardBottom = block.bottom + padBottom;
+      if (cardBottom <= windowStart || block.top >= windowEnd) return [];
+      return [{
+        key: block.key,
+        top: block.top,
+        height: cardBottom - block.top,
+        current: meta.current,
+      }];
+    });
+  }, [loading, rows, offsets, scrollTop, viewportHeight]);
+  const renderedGroupCards = useMemo(() => {
+    if (!treeMotion) {
+      return visibleGroupCards.map((card) => ({
+        ...card,
+        state: "steady" as "steady" | "entering" | "leaving",
+        leavingRows: [] as readonly LeavingCardRow[],
+      }));
+    }
+    const openByKey = new Map(visibleGroupCards.map((card) => [card.key, card]));
+    const cards: {
+      key: string;
+      top: number;
+      height: number;
+      current: boolean;
+      state: "steady" | "entering" | "leaving";
+      leavingRows: readonly LeavingCardRow[];
+    }[] = [];
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index];
+      if (row.kind !== "group") continue;
+      const openCard = openByKey.get(row.project.key);
+      if (openCard) {
+        cards.push({
+          ...openCard,
+          state: treeMotion.prevCardKeys.has(openCard.key) ? "steady" : "entering",
+          leavingRows: [],
+        });
+        continue;
+      }
+      const prevCard = treeMotion.prevCards.get(row.project.key);
+      if (prevCard) {
+        const top = offsets[index];
+        const height = offsets[index + 1] - top;
+        cards.push({
+          key: prevCard.key,
+          top,
+          height,
+          current: row.project.current,
+          state: "leaving",
+          leavingRows: prevCard.rows,
+        });
+      }
+    }
+    return cards;
+  }, [visibleGroupCards, treeMotion, rows, offsets]);
+
+  const enterDelayByIndex = useMemo(() => {
+    if (!treeMotion) return null;
+    const delays = new Map<number, number>();
+    let step = 0;
+    for (const index of visibleIndices) {
+      const row = rows[index];
+      if (!row || row.kind === "spacer") continue;
+      if (row.kind === "group" || row.kind === "archive-group" || row.kind === "pinned-header") {
+        step = 0;
+        continue;
+      }
+      if (row.kind === "footer-open" || row.kind === "footer-archived") continue;
+      if (!treeMotion.prevRowKeys.has(row.key)) {
+        delays.set(index, Math.min(step, 4) * 14);
+        step++;
+      }
+    }
+    return delays;
+  }, [treeMotion, visibleIndices, rows]);
+
+  useLayoutEffect(() => {
+    treeSnapshotRef.current = {
+      rows,
+      offsets,
+      visibleIndices,
+      visibleGroupCards,
+      renderedCardKeys: renderedGroupCards.map((card) => card.key),
+    };
+  }, [rows, offsets, visibleIndices, visibleGroupCards, renderedGroupCards]);
 
   return (
-    <div ref={treeRef} className={`session-tree${layout === "mobile" ? " is-mobile" : ""}${ghostProject ? " is-group-dragging" : ""}`}>
+    <div
+      ref={treeRef}
+      className={`session-tree${layout === "mobile" ? " is-mobile" : ""}${ghostProject ? " is-group-dragging" : ""}${treeMotion && !ghostProject ? " is-tree-moving" : ""}`}
+    >
       {loading && <div className="session-tree-message">{t("sidebar.loading")}</div>}
       {error && <div className="session-tree-message is-error">{error}</div>}
       {showEmpty && <div className="session-tree-message">{emptyLabel}</div>}
@@ -427,12 +614,32 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
       >
         {!loading && (
           <div ref={innerRef} className="session-tree-inner" style={{ height: offsets[rows.length] }}>
+            {renderedGroupCards.map((card) => (
+              <div
+                key={`group-card:${card.key}`}
+                aria-hidden="true"
+                className={`session-tree-group-card is-expanded${card.current ? " is-current" : ""}${card.state === "entering" ? " is-entering" : card.state === "leaving" ? " is-leaving" : ""}`}
+                style={rowStyle(card.top, card.height)}
+              >
+                <span className="session-tree-group-stem" />
+                {card.leavingRows.map((leaving) => (
+                  <div
+                    key={leaving.key}
+                    className={`session-tree-leaving-row${leaving.selected ? " is-selected" : ""}${leaving.isMore ? " is-more" : ""}`}
+                    style={rowStyle(leaving.offsetTop, leaving.height)}
+                  >
+                    <span className="session-tree-leaving-title">{leaving.title}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
             {visibleIndices.map((index) => {
               const row = rows[index];
               if (row.kind === "spacer") return null;
               const top = offsets[index];
               const height = offsets[index + 1] - top;
               const menuOpen = row.key === activeMenuRowKey;
+              const enterDelayMs = enterDelayByIndex?.get(index);
               if (row.kind === "session") {
                 return (
                   <SessionRowView
@@ -441,16 +648,28 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
                     layout={layout}
                     top={top}
                     height={height}
+                    enterDelayMs={enterDelayMs}
                     now={now}
                     renaming={row.family.root.id === renamingRootId}
                     confirming={row.family.root.id === confirmDeleteRootId}
                     menuOpen={menuOpen}
                     handlers={handlersRef}
+                    onAnimate={startTreeMotion}
                   />
                 );
               }
               if (row.kind === "archive-group") {
-                return <ArchiveGroupRowView key={row.key} row={row} top={top} height={height} menuOpen={menuOpen} handlers={handlersRef} />;
+                return (
+                  <ArchiveGroupRowView
+                    key={row.key}
+                    row={row}
+                    top={top}
+                    height={height}
+                    menuOpen={menuOpen}
+                    handlers={handlersRef}
+                    onAnimate={startTreeMotion}
+                  />
+                );
               }
               if (row.kind === "group") {
                 const renaming = row.project.key === renamingProjectKey;
@@ -467,10 +686,22 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
                     dragPhase={dragView?.projectKey === row.project.key ? dragView.phase : null}
                     drag={groupDrag.handlers}
                     handlers={handlersRef}
+                    onAnimate={startTreeMotion}
                   />
                 );
               }
-              return <PlainRowView key={row.key} row={row} top={top} height={height} handlers={handlersRef} onMoreAction={handleMoreAction} />;
+              return (
+                <PlainRowView
+                  key={row.key}
+                  row={row}
+                  top={top}
+                  height={height}
+                  enterDelayMs={enterDelayMs}
+                  handlers={handlersRef}
+                  onMoreAction={handleMoreAction}
+                  onAnimate={startTreeMotion}
+                />
+              );
             })}
             {dragSource && (
               <div
@@ -492,10 +723,36 @@ export function SessionTree(props: SessionTreeProps): ReactNode {
   );
 }
 
+export const SESSION_TREE_MOTION_MS = 200;
+const SESSION_TREE_MOTION_GRACE_MS = 90;
+
+interface LeavingCardRow {
+  key: string;
+  offsetTop: number;
+  height: number;
+  title: string;
+  selected: boolean;
+  isMore: boolean;
+}
+
+interface LeavingCard {
+  key: string;
+  top: number;
+  height: number;
+  current: boolean;
+  rows: readonly LeavingCardRow[];
+}
+
+interface TreeMotionState {
+  prevRowKeys: ReadonlySet<string>;
+  prevCardKeys: ReadonlySet<string>;
+  prevCards: ReadonlyMap<string, LeavingCard>;
+}
+
 type Handlers = RefObject<SessionTreeProps>;
 
-function rowStyle(top: number, height: number) {
-  return { top, height };
+function rowStyle(top: number, height: number, enterDelayMs?: number) {
+  return enterDelayMs ? { top, height, animationDelay: `${enterDelayMs}ms` } : { top, height };
 }
 
 const SessionRowView = memo(function SessionRowView({
@@ -503,21 +760,25 @@ const SessionRowView = memo(function SessionRowView({
   layout,
   top,
   height,
+  enterDelayMs,
   now,
   renaming,
   confirming,
   menuOpen,
   handlers,
+  onAnimate,
 }: {
   row: SessionRow;
   layout: SidebarLayout;
   top: number;
   height: number;
+  enterDelayMs?: number;
   now: number;
   renaming: boolean;
   confirming: boolean;
   menuOpen: boolean;
   handlers: Handlers;
+  onAnimate: () => void;
 }) {
   const { locale, t } = useI18n();
   const { family, context, status } = row;
@@ -532,6 +793,7 @@ const SessionRowView = memo(function SessionRowView({
     menuOpen ? "is-menu-open" : "",
     confirming ? "is-confirming" : "",
     renaming ? "is-renaming" : "",
+    enterDelayMs !== undefined ? "is-entering" : "",
   ].filter(Boolean).join(" ");
 
   if (confirming) {
@@ -641,7 +903,7 @@ const SessionRowView = memo(function SessionRowView({
   return (
     <div
       className={className}
-      style={rowStyle(top, height)}
+      style={rowStyle(top, height, enterDelayMs)}
       data-row-key={row.key}
       onClick={() => handlers.current.onSelectFamily(family)}
       onContextMenu={(event) => handlers.current.onRowContextMenu(row, event)}
@@ -682,6 +944,7 @@ const SessionRowView = memo(function SessionRowView({
               title={t("sidebar.restore")}
               onClick={(event) => {
                 event.stopPropagation();
+                onAnimate();
                 handlers.current.onRestoreFamily(family);
               }}
             >
@@ -695,6 +958,7 @@ const SessionRowView = memo(function SessionRowView({
               title={t("sidebar.archive")}
               onClick={(event) => {
                 event.stopPropagation();
+                onAnimate();
                 handlers.current.onArchiveFamily(family);
               }}
             >
@@ -873,6 +1137,7 @@ const GroupRowView = memo(function GroupRowView({
   dragPhase,
   drag,
   handlers,
+  onAnimate,
 }: {
   row: Extract<SidebarRow, { kind: "group" }>;
   top: number;
@@ -887,6 +1152,7 @@ const GroupRowView = memo(function GroupRowView({
   dragPhase: "armed" | "dragging" | null;
   drag: GroupDragHandlers;
   handlers: Handlers;
+  onAnimate: () => void;
 }) {
   const { t } = useI18n();
   const { project, expanded } = row;
@@ -940,15 +1206,26 @@ const GroupRowView = memo(function GroupRowView({
         className="session-tree-group-toggle"
         aria-expanded={expanded}
         title={project.root}
-        onClick={(event) => handlers.current.onToggleGroup(project.key, event.altKey)}
+        onClick={(event) => {
+          onAnimate();
+          handlers.current.onToggleGroup(project.key, event.altKey);
+        }}
       >
         {/* A section header, not one more row: the chevron leads in a
             column of its own, so the name starts where the session titles
             below it do and every header's chevron lines up. */}
-        <ChevronIcon size={12} strokeWidth={3} className={`session-tree-chevron${expanded ? " is-open" : ""}`} />
+        <ChevronIcon size={10} strokeWidth={2.6} className={`session-tree-chevron${expanded ? " is-open" : ""}`} />
+        {expanded ? (
+          <FolderOpenIcon size={14} className="session-tree-group-icon is-open" />
+        ) : (
+          <FolderIcon size={14} className="session-tree-group-icon" />
+        )}
         <span className="session-tree-group-name">{project.name}</span>
         {project.pinned && <PinIcon size={10} className="session-tree-group-pin" label={t("sidebar.pinnedProject")} />}
         {!expanded && <ActivitySummary running={row.running} awaiting={row.awaiting} unread={row.unread} t={t} />}
+        {typeof row.count === "number" && row.count > 0 && (
+          <span className="session-tree-group-count">{row.count}</span>
+        )}
       </button>
       <span className="session-tree-group-actions">
         <button
@@ -987,17 +1264,22 @@ const PlainRowView = memo(function PlainRowView({
   row,
   top,
   height,
+  enterDelayMs,
   handlers,
   onMoreAction,
+  onAnimate,
 }: {
   row: Exclude<SidebarRow, { kind: "session" | "group" | "archive-group" | "spacer" }>;
   top: number;
   height: number;
+  enterDelayMs?: number;
   handlers: Handlers;
   onMoreAction: (rowKey: string, key: string, action: "more" | "less", button: HTMLElement) => void;
+  onAnimate: () => void;
 }) {
   const { t } = useI18n();
-  const style = rowStyle(top, height);
+  const style = rowStyle(top, height, enterDelayMs);
+  const enteringClass = enterDelayMs !== undefined ? " is-entering" : "";
 
   switch (row.kind) {
     case "pinned-header":
@@ -1007,7 +1289,10 @@ const PlainRowView = memo(function PlainRowView({
             type="button"
             className="session-tree-pinned-toggle"
             aria-expanded={!row.collapsed}
-            onClick={() => handlers.current.onTogglePinned()}
+            onClick={() => {
+              onAnimate();
+              handlers.current.onTogglePinned();
+            }}
           >
             <ChevronIcon size={12} strokeWidth={3} className={`session-tree-chevron${row.collapsed ? "" : " is-open"}`} />
             <span className="session-tree-pinned-label">{t("sidebar.pinned")}</span>
@@ -1043,7 +1328,7 @@ const PlainRowView = memo(function PlainRowView({
     case "group-more": {
       const moreKey = row.kind === "pinned-more" ? PINNED_MORE_KEY : row.projectKey;
       return (
-        <div className="session-tree-row session-tree-more" style={style} data-row-key={row.key}>
+        <div className={`session-tree-row session-tree-more${enteringClass}`} style={style} data-row-key={row.key}>
           {row.hidden > 0 && (
             <button
               type="button"
@@ -1069,7 +1354,7 @@ const PlainRowView = memo(function PlainRowView({
     }
     case "group-empty":
       return (
-        <div className="session-tree-row session-tree-group-empty" style={style} data-row-key={row.key}>
+        <div className={`session-tree-row session-tree-group-empty${enteringClass}`} style={style} data-row-key={row.key}>
           <span className="session-tree-group-empty-label">{t("sidebar.noLiveSessions")}</span>
           {!row.project.pinned && (
             <button
@@ -1119,12 +1404,14 @@ const ArchiveGroupRowView = memo(function ArchiveGroupRowView({
   height,
   menuOpen,
   handlers,
+  onAnimate,
 }: {
   row: Extract<SidebarRow, { kind: "archive-group" }>;
   top: number;
   height: number;
   menuOpen: boolean;
   handlers: Handlers;
+  onAnimate: () => void;
 }) {
   const { t } = useI18n();
   const { project, expanded } = row;
@@ -1140,9 +1427,17 @@ const ArchiveGroupRowView = memo(function ArchiveGroupRowView({
         className="session-tree-group-toggle"
         aria-expanded={expanded}
         title={project.root}
-        onClick={(event) => handlers.current.onToggleArchiveGroup?.(project.key, event.altKey)}
+        onClick={(event) => {
+          onAnimate();
+          handlers.current.onToggleArchiveGroup?.(project.key, event.altKey);
+        }}
       >
-        <ChevronIcon size={12} strokeWidth={3} className={`session-tree-chevron${expanded ? " is-open" : ""}`} />
+        <ChevronIcon size={10} strokeWidth={2.6} className={`session-tree-chevron${expanded ? " is-open" : ""}`} />
+        {expanded ? (
+          <FolderOpenIcon size={14} className="session-tree-group-icon is-open" />
+        ) : (
+          <FolderIcon size={14} className="session-tree-group-icon" />
+        )}
         <span className="session-tree-group-name">{project.name}</span>
         <span className="session-tree-archive-group-count">· {row.count}</span>
       </button>

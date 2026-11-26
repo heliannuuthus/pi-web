@@ -663,12 +663,13 @@ export const ChatMinimap = memo(function ChatMinimap({
       }}
       style={{
         width: MINIMAP_WIDTH,
+        marginTop: "var(--chat-top-inset, 0px)",
         flexShrink: 0,
         position: "relative",
         cursor: "pointer",
         userSelect: "none",
-        borderLeft: "1px solid var(--border)",
-        background: "var(--bg-panel)",
+        borderLeft: "1px solid color-mix(in oklab, var(--border) 55%, transparent)",
+        background: "color-mix(in oklab, var(--bg-panel) 45%, transparent)",
         overflow: "visible",
       }}
     >

@@ -39,17 +39,17 @@ export function SystemPromptPanel({ loading, prompt, translate }: Props) {
           padding: 12px 16px;
         }
         .system-prompt-text {
-          color: var(--text-muted);
+          color: var(--text);
           font-family: var(--font-mono);
-          font-size: 12px;
-          line-height: 1.6;
+          font-size: 14px;
+          line-height: 1.7;
           overflow-wrap: anywhere;
           white-space: pre-wrap;
         }
         .system-prompt-empty {
           padding: 10px 0;
           color: var(--text-muted);
-          font-size: 12px;
+          font-size: 14px;
           font-style: italic;
         }
       `}</style>

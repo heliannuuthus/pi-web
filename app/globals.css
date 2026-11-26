@@ -27,23 +27,63 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #ffffff;
-  --bg-panel: #f5f5f5;
-  --bg-hover: #eeeeee;
-  --bg-selected: #e8e8e8;
-  --border: #e0e0e0;
-  --text: #1a1a1a;
-  --text-muted: #515c6b;
-  --text-dim: #5e6673;
-  --accent: #245bce;
-  --accent-hover: #1d4ed8;
-  --accent-contrast: #ffffff;
-  --user-bg: #eff6ff;
-  --assistant-bg: #ffffff;
-  --tool-bg: #f9fafb;
-  --bg-subtle: rgba(0,0,0,0.03);
+  --bg: oklch(1 0 0);
+  --bg-panel: oklch(0.978 0.004 264);
+  --bg-hover: oklch(0.958 0.008 264);
+  --bg-selected: oklch(0.945 0.014 264);
+  --border: oklch(0.905 0.008 264);
+  --text: oklch(0.145 0.01 264);
+  --text-muted: oklch(0.285 0.015 264);
+  --text-dim: oklch(0.425 0.014 264);
+  --text-thinking: color-mix(in oklab, var(--text-dim) 72%, var(--bg));
+  --accent: oklch(0.488 0.243 264.376);
+  --accent-hover: oklch(0.432 0.232 264.6);
+  --accent-contrast: oklch(1 0 0);
+  --user-bg: oklch(0.962 0.022 262);
+  --assistant-bg: oklch(1 0 0);
+  --tool-bg: oklch(0.984 0.004 264);
+  --bg-subtle: oklch(0.488 0.243 264.376 / 0.045);
+  --glass-bg: radial-gradient(
+    120% 145% at 50% 0%,
+    color-mix(in oklab, var(--bg) 74%, transparent) 0%,
+    color-mix(in oklab, var(--bg) 48%, transparent) 58%,
+    color-mix(in oklab, var(--bg-panel) 58%, transparent) 100%
+  );
+  --glass-divider: color-mix(in oklab, var(--border) 55%, transparent);
+  --glass-highlight: rgba(255, 255, 255, 0.96);
+  --glass-inner-bottom: rgba(255, 255, 255, 0.56);
+  --glass-prism-left: rgba(147, 197, 253, 0.16);
+  --glass-prism-right: rgba(244, 114, 182, 0.11);
+  --glass-rim: color-mix(in oklab, var(--border) 42%, rgba(255, 255, 255, 0.82));
+  --glass-shadow:
+    0 10px 28px -8px rgba(15, 23, 42, 0.13),
+    0 2px 6px -1px rgba(15, 23, 42, 0.06),
+    0 0 0 0.5px rgba(15, 23, 42, 0.08);
+  --seg-track-bg: color-mix(in oklab, var(--accent) 4.5%, rgba(15, 23, 42, 0.038));
+  --seg-track-border: color-mix(in oklab, var(--accent) 8%, rgba(15, 23, 42, 0.055));
+  --seg-track-shadow: inset 0 1px 1.5px rgba(15, 23, 42, 0.04);
+  --seg-thumb-bg: #ffffff;
+  --seg-thumb-shadow:
+    0 1.5px 4px -1px rgba(15, 23, 42, 0.12),
+    0 1px 2px -1px color-mix(in oklab, var(--accent) 18%, transparent),
+    0 0 0 0.5px color-mix(in oklab, var(--accent) 12%, rgba(15, 23, 42, 0.06));
+  --seg-divider: color-mix(in oklab, var(--text) 10%, transparent);
+  --pill-hover-bg: color-mix(in oklab, var(--accent) 6%, rgba(15, 23, 42, 0.035));
+  --ring-input: oklch(0.51 0.24 264);
+  --ring-cache-read: oklch(0.64 0.17 162);
+  --ring-cache-write: oklch(0.62 0.16 232);
+  --ring-output: oklch(0.70 0.17 65);
+  --sidebar-bg: color-mix(in oklab, var(--bg-panel) 62%, var(--bg-hover) 38%);
+  --sidebar-group-bg: color-mix(in oklab, var(--bg) 66%, transparent);
+  --sidebar-group-current-bg: color-mix(in oklab, var(--bg) 88%, transparent);
+  --sidebar-group-border: color-mix(in oklab, var(--border) 68%, transparent);
+  --sidebar-group-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  --sidebar-selected-bg: color-mix(in oklab, var(--accent) 8%, var(--bg-selected));
+  --sidebar-selected-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 11%, transparent);
+  --sidebar-stem: color-mix(in oklab, var(--border) 78%, transparent);
+  --sidebar-badge-bg: color-mix(in oklab, var(--text) 5.5%, transparent);
   --chat-content-max-width: 820px;
-  --chat-content-font-size: 14px;
+  --chat-content-font-size: 16px;
 }
 
 html.dark,
@@ -57,13 +97,54 @@ html.dark,
   --text: #e8e8e8;
   --text-muted: #b7b7b7;
   --text-dim: #a4a4a4;
-  --accent: #a4c2f4;
-  --accent-hover: #c3d8fa;
-  --accent-contrast: #182234;
+  --accent: oklch(0.755 0.125 264);
+  --accent-hover: oklch(0.82 0.095 264);
+  --accent-contrast: oklch(0.18 0.02 264);
   --user-bg: #292929;
   --assistant-bg: #1a1a1a;
   --tool-bg: #222222;
   --bg-subtle: rgba(255,255,255,0.04);
+  --sidebar-bg: color-mix(in oklab, var(--bg) 84%, #000000 16%);
+  --sidebar-group-bg: color-mix(in oklab, var(--bg-panel) 54%, transparent);
+  --sidebar-group-current-bg: color-mix(in oklab, var(--bg-panel) 78%, transparent);
+  --sidebar-group-border: color-mix(in oklab, var(--border) 42%, transparent);
+  --sidebar-group-shadow: 0 1px 2.5px rgba(0, 0, 0, 0.22);
+  --sidebar-selected-bg: color-mix(in oklab, var(--accent) 10%, var(--bg-selected));
+  --sidebar-selected-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --sidebar-stem: color-mix(in oklab, var(--border) 62%, transparent);
+  --sidebar-badge-bg: color-mix(in oklab, var(--text) 7.5%, transparent);
+}
+
+html.dark {
+  --glass-bg: radial-gradient(
+    120% 145% at 50% 0%,
+    color-mix(in oklab, var(--bg-panel) 74%, transparent) 0%,
+    color-mix(in oklab, var(--bg) 56%, transparent) 60%,
+    color-mix(in oklab, var(--bg-panel) 64%, transparent) 100%
+  );
+  --glass-divider: color-mix(in oklab, var(--border) 62%, transparent);
+  --glass-highlight: rgba(255, 255, 255, 0.16);
+  --glass-inner-bottom: rgba(255, 255, 255, 0.06);
+  --glass-prism-left: rgba(96, 165, 250, 0.1);
+  --glass-prism-right: rgba(192, 132, 252, 0.08);
+  --glass-rim: color-mix(in oklab, var(--border) 72%, rgba(255, 255, 255, 0.16));
+  --glass-shadow:
+    0 12px 32px -10px rgba(0, 0, 0, 0.48),
+    0 2px 8px -2px rgba(0, 0, 0, 0.28),
+    0 0 0 0.5px rgba(0, 0, 0, 0.45);
+  --seg-track-bg: rgba(0, 0, 0, 0.28);
+  --seg-track-border: rgba(255, 255, 255, 0.065);
+  --seg-track-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  --seg-thumb-bg: color-mix(in oklab, var(--bg-selected) 88%, #ffffff 12%);
+  --seg-thumb-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --seg-divider: rgba(255, 255, 255, 0.1);
+  --pill-hover-bg: rgba(255, 255, 255, 0.07);
+  --ring-input: oklch(0.68 0.20 264);
+  --ring-cache-read: oklch(0.74 0.17 162);
+  --ring-cache-write: oklch(0.74 0.15 232);
+  --ring-output: oklch(0.78 0.16 70);
 }
 
 [data-theme="mist"] {
@@ -349,8 +430,13 @@ html, body {
   color: var(--text);
   font-family: var(--font-ui);
   font-weight: var(--font-ui-weight);
-  font-size: 14px;
+  font-size: 15.5px;
+  text-rendering: optimizeLegibility;
   overscroll-behavior: none;
+}
+
+html:not(.dark) body {
+  -webkit-text-stroke: 0.08px currentColor;
 }
 
 body {
@@ -1180,25 +1266,452 @@ button.extension-widget-trigger:focus-visible {
    finger's 44px; its icon buttons stay square. The file tree's rows
    (FileExplorer) grow to 36px there, their row buttons with them. */
 :root {
-  --top-bar-height: 36px;
-  --file-row-height: 24px;
+  --top-bar-height: 45px;
+  --file-row-height: 26px;
 }
 @media (max-width: 640px), (pointer: coarse) {
   :root {
-    --top-bar-height: 44px;
+    --top-bar-height: 46px;
     --file-row-height: 36px;
   }
 }
 
+/* Screen-optimized LXGW WenKai mapping (霞鹜文楷屏幕阅读版规范):
+   Regular is mapped to 300 (Light) and Medium is mapped to 400 (Normal),
+   so screen text has solid, crisp ink strokes while 600/700 synthesize clean bold. */
+@font-face {
+  font-family: "LXGW WenKai";
+  src: local("LXGWWenKai-Regular"), local("LXGW WenKai"), local("霞鹜文楷");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 114%;
+}
+@font-face {
+  font-family: "LXGW WenKai";
+  src: local("LXGWWenKai-Medium"), local("LXGW WenKai Medium"), local("霞鹜文楷 Medium"), local("LXGWWenKai-Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 114%;
+}
+@font-face {
+  font-family: "LXGW WenKai Mono";
+  src: local("LXGWWenKaiMono-Regular"), local("LXGW WenKai Mono"), local("霞鹜文楷等宽");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 114%;
+}
+@font-face {
+  font-family: "LXGW WenKai Mono";
+  src: local("LXGWWenKaiMono-Medium"), local("LXGW WenKai Mono Medium"), local("霞鹜文楷等宽 Medium"), local("LXGWWenKaiMono-Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 114%;
+}
+
 :root {
-  --font-ui-default: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-ui-default: "LXGW WenKai", "LXGW WenKai Screen", "LXGW ZhenKai GB", -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, sans-serif;
   /* The drawing faces come before the web font: its generated fallback is
      Arial, which would otherwise take the box drawing it lacks. */
-  --font-mono-default: "Terminal Drawing", "Terminal Drawing Windows", var(--font-noto-mono), 'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, 'PingFang SC', 'Microsoft YaHei', monospace;
+  --font-mono-default: "Terminal Drawing", "Terminal Drawing Windows", "LXGW WenKai Mono", var(--font-noto-mono), "JetBrains Mono", "Fira Code", "Consolas", ui-monospace, "PingFang SC", "Microsoft YaHei", monospace;
   --font-ui: var(--font-ui-default);
   --font-mono: var(--font-mono-default);
   --font-ui-weight: 400;
   --font-mono-weight: 400;
+}
+
+/* Apple Liquid Glass & frosted chrome primitives. */
+.apple-glass-host {
+  position: relative;
+}
+
+.apple-glass-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 62%, transparent);
+  box-shadow: inset 0 -0.5px 0 var(--glass-highlight);
+  transition:
+    background 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.24s ease;
+}
+
+.apple-glass-backdrop.is-frosted {
+  background: color-mix(in oklab, var(--bg) 70%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(195%) brightness(1.02);
+  backdrop-filter: blur(24px) saturate(195%) brightness(1.02);
+}
+
+.app-top-bar-float.is-elevated .apple-glass-backdrop {
+  border-bottom-color: color-mix(in oklab, var(--border) 78%, transparent);
+  box-shadow:
+    inset 0 -0.5px 0 var(--glass-highlight),
+    0 8px 24px -12px rgba(15, 23, 42, 0.1);
+}
+
+html.dark .app-top-bar-float.is-elevated .apple-glass-backdrop {
+  box-shadow:
+    inset 0 -0.5px 0 var(--glass-highlight),
+    0 10px 28px -12px rgba(0, 0, 0, 0.42);
+}
+
+.apple-glass-content {
+  position: relative;
+  z-index: 1;
+  container-type: inline-size;
+}
+
+.apple-glass-bar {
+  background: color-mix(in oklab, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(195%) brightness(1.02);
+  backdrop-filter: blur(24px) saturate(195%) brightness(1.02);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 62%, transparent);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .apple-glass-backdrop.is-frosted,
+  .apple-glass-bar {
+    background: color-mix(in oklab, var(--bg-panel) 96%, var(--bg));
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .apple-glass-backdrop.is-frosted,
+  .apple-glass-bar {
+    background: var(--bg-panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Permanent flush frosted glass header */
+.app-top-bar-float {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 35;
+}
+
+@keyframes top-popover-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.app-top-popover {
+  transform-origin: top center;
+  animation: top-popover-enter 190ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Animated Apple Segmented Control & Magnetic Hover Gliders */
+.apple-segmented {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 999px;
+  background: var(--seg-track-bg);
+  border: 1px solid var(--seg-track-border);
+  box-shadow: var(--seg-track-shadow);
+  flex-shrink: 0;
+}
+
+.apple-toolbar-actions {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.apple-glider-hover,
+.apple-glider-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, width, opacity;
+}
+
+.apple-toolbar-actions > .apple-glider-hover {
+  top: 2px;
+  bottom: 2px;
+}
+
+.apple-glider-hover {
+  z-index: 0;
+  background: var(--pill-hover-bg);
+  transition: opacity 150ms ease;
+}
+
+.apple-glider-hover.is-visible {
+  opacity: 1;
+}
+
+.apple-glider-hover.is-sliding {
+  transition:
+    transform 210ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 210ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 150ms ease;
+}
+
+.apple-glider-thumb {
+  z-index: 1;
+  background: var(--seg-thumb-bg);
+  box-shadow: var(--seg-thumb-shadow);
+  transition: opacity 170ms ease;
+}
+
+.apple-glider-thumb.is-visible {
+  opacity: 1;
+}
+
+.apple-glider-thumb.is-sliding {
+  transition:
+    transform 340ms cubic-bezier(0.2, 1.15, 0.32, 1),
+    width 270ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 170ms ease;
+}
+
+.apple-segment {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in oklab, var(--text) 78%, var(--text-muted));
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color 0.16s ease,
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.14s ease;
+}
+
+.apple-segment-wrap {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.apple-segmented > :not(:first-child):not(.apple-glider-hover):not(.apple-glider-thumb)::before {
+  content: "";
+  position: absolute;
+  left: -1.5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 11px;
+  border-radius: 1px;
+  background: var(--seg-divider);
+  pointer-events: none;
+  transition: opacity 0.14s ease;
+}
+
+.apple-segmented > :is([aria-pressed="true"], .is-active, :hover, :has([aria-pressed="true"]), :has(.is-active), :has(:hover))::before,
+.apple-segmented > :is([aria-pressed="true"], .is-active, :hover, :has([aria-pressed="true"]), :has(.is-active), :has(:hover)) + *::before {
+  opacity: 0;
+}
+
+.apple-segment:not(:disabled):hover {
+  color: var(--text);
+}
+
+.apple-segment:not(:disabled):active,
+.apple-glass-pill-btn:not(:disabled):active,
+.apple-glass-icon-btn:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+.apple-segment[aria-pressed="true"],
+.apple-segment.is-active {
+  color: var(--text);
+  -webkit-text-stroke: 0.22px currentColor;
+}
+
+/* SSR fallback before SegmentedTrack mounts its animated glider */
+.apple-segmented:not([data-glider-ready="true"]) .apple-segment:is([aria-pressed="true"], .is-active) {
+  background: var(--seg-thumb-bg);
+  box-shadow: var(--seg-thumb-shadow);
+}
+
+.apple-segment:disabled {
+  color: var(--text-dim);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Center the segmented switcher on wide panes; flow inline automatically as panes narrow. */
+.apple-segmented-slot {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.apple-glass-pill-btn,
+.apple-glass-icon-btn {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in oklab, var(--text) 78%, var(--text-muted));
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.14s ease;
+}
+
+.apple-glass-pill-btn {
+  gap: 5px;
+  height: 31px;
+  padding: 0 11px;
+}
+
+.apple-glass-icon-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
+.apple-glass-pill-btn:not(:disabled):hover,
+.apple-glass-icon-btn:not(:disabled):hover {
+  color: var(--text);
+}
+
+/* Outside a magnetic glider track, individual buttons keep their own hover fill. */
+:not(.apple-toolbar-actions) > .apple-glass-pill-btn:not(:disabled):hover,
+:not(.apple-toolbar-actions) > .apple-glass-icon-btn:not(:disabled):hover {
+  background: var(--pill-hover-bg);
+}
+
+.apple-glass-pill-btn:is([aria-pressed="true"], [aria-expanded="true"], .is-active),
+.apple-glass-icon-btn:is([aria-pressed="true"], [aria-expanded="true"], .is-active) {
+  background: var(--seg-thumb-bg);
+  color: var(--text);
+  box-shadow: var(--seg-thumb-shadow);
+}
+
+.apple-glass-pill-btn:disabled,
+.apple-glass-icon-btn:disabled {
+  color: var(--text-dim);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.apple-glass-pill-btn:focus-visible,
+.apple-glass-icon-btn:focus-visible,
+.apple-segment:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Container-adaptive stages so split panels and narrow windows never crowd or clip */
+@container (max-width: 980px) {
+  .apple-segmented-slot {
+    position: static;
+    transform: none;
+  }
+}
+
+@container (max-width: 760px) {
+  .apple-action-label {
+    display: none !important;
+  }
+  .apple-toolbar-actions .apple-glass-pill-btn {
+    width: 30px;
+    padding: 0;
+  }
+}
+
+@container (max-width: 540px) {
+  .apple-segment {
+    padding: 0 8px;
+    gap: 4px;
+  }
+}
+
+@keyframes session-ring-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.session-usage-ring-btn:hover {
+  background: var(--bg-hover) !important;
+  transform: scale(1.05);
+}
+
+.session-usage-ring-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.session-info-popover {
+  animation: session-ring-popover-in 175ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-top-bar-float,
+  .app-top-bar-float.is-hidden,
+  .apple-glider-hover,
+  .apple-glider-thumb,
+  .app-top-popover,
+  .session-usage-ring-btn,
+  .session-info-popover {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 pre, code {
@@ -1213,7 +1726,7 @@ pre, code {
 
 /* react-markdown output styles */
 .chat-content {
-  --chat-font-size-offset: calc(var(--chat-content-font-size, 14px) - 14px);
+  --chat-font-size-offset: calc(var(--chat-content-font-size, 16px) - 14px);
 }
 
 .markdown-body {
@@ -2233,7 +2746,7 @@ pre, code {
   align-items: center;
   gap: 6px;
   min-width: 0;
-  height: 29px;
+  height: 26px;
   padding: 0 10px;
   border: 1px solid var(--border);
   border-radius: 7px;

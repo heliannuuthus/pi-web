@@ -321,43 +321,35 @@ export function BranchNavigator({ tree, activeLeafId, onLeafChange, inline, cont
 
   if (inline) {
     return (
-      <div style={{ height: "100%", display: "flex", alignItems: "stretch" }}>
+      <div className="apple-segment-wrap">
         <button
           ref={btnRef}
+          type="button"
+          className={`apple-segment${open ? " is-active" : ""}`}
           onClick={() => onToggle ? onToggle() : setOpenInternal((v) => !v)}
           style={{
-            display: hideInlineButton ? "none" : "flex",
-            alignItems: "center",
-            gap: 6,
-            height: "100%",
-            padding: "0 12px",
-            background: open ? "var(--bg-selected)" : "none",
-            border: "none",
-            borderTop: open ? "2px solid var(--accent)" : "2px solid transparent",
-            borderRight: "1px solid var(--border)",
-            cursor: "pointer",
-            color: open ? "var(--text)" : "var(--text-muted)",
-            fontSize: 11,
-            whiteSpace: "nowrap",
-            transition: "color 0.1s, background 0.1s",
+            display: hideInlineButton ? "none" : undefined,
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = open ? "var(--text)" : "var(--text-muted)"; }}
-           title={t("i18n.branches")}
-           aria-label={t("i18n.branches")}
+          title={t("i18n.branches")}
+          aria-label={t("i18n.branches")}
           aria-pressed={open}
         >
           {branchIcon}
-           {!compact && <span>{t("i18n.branches")}</span>}
+          {!compact && <span>{t("i18n.branches")}</span>}
         </button>
         {open && dropdownPos && (
           <div style={{
             position: "fixed",
-            top: dropdownPos.top,
+            top: dropdownPos.top + 6,
             left: dropdownPos.left,
             width: dropdownPos.width,
-            background: "var(--bg-panel)",
-            borderBottom: "1px solid var(--border)",
+            background: "color-mix(in oklab, var(--bg-panel) 94%, var(--bg))",
+            backdropFilter: "blur(20px) saturate(180%)",
+            WebkitBackdropFilter: "blur(20px) saturate(180%)",
+            border: "1px solid var(--glass-rim)",
+            borderRadius: 16,
+            boxShadow: "0 18px 42px -12px rgba(15, 23, 42, 0.18), 0 4px 12px -4px rgba(15, 23, 42, 0.08)",
+            overflow: "hidden",
             zIndex: 500,
           }}>
             {hasContent ? (

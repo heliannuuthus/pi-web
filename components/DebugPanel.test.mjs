@@ -721,7 +721,7 @@ test("a tooltip holds the view still: the mouse on a titled element freezes what
   assert.match(panelSource, /const shown = held \?\? \{ page, server, samples \};/);
 });
 
-test("the Debug button only toggles its panel, left of the session stats", () => {
+test("the Debug button only toggles its panel, right-aligned before the file panel toggle", () => {
   const button = between(shellSource, "const renderDebugButton = (mobile: boolean) => {", "const renderMainFileToggle");
   assert.match(button, /onClick=\{\(\) => toggleTopPanel\("debug", mobile\)\}/);
   assert.doesNotMatch(button, /handleSystemInfoToggle|sendAgentCommand|fetch\(|setSessionKey|loadSession|systemInfoLoaderRef/);
@@ -731,14 +731,12 @@ test("the Debug button only toggles its panel, left of the session stats", () =>
   assert.match(button, /if \(!showChat\) return null;/);
   assert.notEqual(enLocale.messages["debug.title"], enLocale.messages["session.title"], "e2e finds the stats button by its own name");
 
-  // Desktop: after the chat's actions, right before the stats, taking the free space.
-  assert.match(shellSource, /\{renderChatToolbarActions\(false\)\}\s*\{renderDebugButton\(false\)\}\s*\{renderSessionStatsButton\(false\)\}/);
+  // Desktop: after the chat's actions, taking the free space on the right.
+  assert.match(shellSource, /\{renderChatToolbarActions\(false\)\}\s*\{renderDebugButton\(false\)\}/);
   assert.match(button, /marginLeft: mobile \? 0 : "auto"/);
-  const stats = between(shellSource, "const renderSessionStatsButton = (mobile: boolean) => {", "const renderDebugButton");
-  assert.match(stats, /\n\s*marginLeft: 0,/);
   assert.match(shellSource, /marginLeft: !mobile && !showChat \? "auto" : 0,/);
-  // Phones: before the stats on a wide one, in the "more" overlay on a narrow one.
-  assert.match(shellSource, /\{!isNarrowMobile && renderChatToolbarActions\(true\)\}\s*\{!isNarrowMobile && renderDebugButton\(true\)\}\s*\{renderSessionStatsButton\(true\)\}/);
+  // Phones: on the bar on a wide one, in the "more" overlay on a narrow one.
+  assert.match(shellSource, /\{!isNarrowMobile && renderChatToolbarActions\(true\)\}\s*\{!isNarrowMobile && renderDebugButton\(true\)\}/);
   assert.match(shellSource, /\{renderChatToolbarActions\(true\)\}\s*\{renderDebugButton\(true\)\}\s*<\/div>/);
 });
 

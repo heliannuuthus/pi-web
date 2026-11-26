@@ -79,15 +79,15 @@ export function CodemodeCallList({ calls, omitted, isError }: {
         background: "var(--bg-subtle)",
         padding: "6px 10px",
         fontFamily: "var(--font-mono)",
-        fontSize: "calc(11.5px + var(--chat-font-size-offset, 0px))",
-        lineHeight: 1.5,
+        fontSize: "calc(13px + var(--chat-font-size-offset, 0px))",
+        lineHeight: 1.55,
         display: "flex",
         flexDirection: "column",
         gap: 3,
         minWidth: 0,
       }}
     >
-      <div style={{ color: "var(--text-dim)", fontFamily: "inherit", fontSize: 11 }}>{t("codemode.calls")}</div>
+      <div style={{ color: "var(--text-dim)", fontFamily: "inherit", fontSize: "calc(12px + var(--chat-font-size-offset, 0px))" }}>{t("codemode.calls")}</div>
       {omitted > 0 && (
         <div style={{ color: "var(--text-dim)" }}>{t("codemode.omittedCalls", { count: omitted })}</div>
       )}

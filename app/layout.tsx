@@ -70,6 +70,8 @@ export default function RootLayout({
             __html: THEME_INIT_SCRIPT,
           }}
         />
+        {/* eslint-disable-next-line @next/next/no-css-tags -- runtime user stylesheet from ~/.pi/agent/web-theme.css */}
+        <link rel="stylesheet" href="/web-theme.css" />
       </head>
       <body translate="no" className="notranslate" suppressHydrationWarning>
         {children}
