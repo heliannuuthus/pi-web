@@ -18,6 +18,9 @@
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: modal-backdrop-fade 180ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 .config-panel-surface {
@@ -43,6 +46,8 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  transform-origin: center;
+  animation: modal-surface-enter 200ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 .config-panel-header {
@@ -1458,6 +1463,9 @@
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: modal-backdrop-fade 180ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 /* Focus moves to the dialog itself when Settings opens (tabIndex -1); it is not a control, so no ring. */
@@ -1477,6 +1485,8 @@
   border-radius: 8px;
   background: var(--bg);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+  transform-origin: center;
+  animation: modal-surface-enter 200ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 .settings-dialog-header {
@@ -2546,6 +2556,9 @@ select.mcp-add-input {
   justify-content: center;
   padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: modal-backdrop-fade 180ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 .project-trust-dialog {
@@ -2559,6 +2572,8 @@ select.mcp-add-input {
   border-radius: 8px;
   background: var(--bg-panel);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
+  transform-origin: center;
+  animation: modal-surface-enter 200ms var(--ease-out-quint, cubic-bezier(0.23, 1, 0.32, 1)) both;
 }
 
 /* Focus moves to the dialog itself when it opens (tabIndex -1); it is not a control, so no ring. */
@@ -2819,5 +2834,33 @@ select.mcp-add-input {
       padding-bottom: max(8px, env(safe-area-inset-bottom));
       padding-left: max(59px, env(safe-area-inset-left));
     }
+  }
+}
+
+@keyframes modal-backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-surface-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .config-panel-root.is-modal > .config-panel-surface,
+  .settings-dialog-surface,
+  .project-trust-dialog {
+    animation: modal-backdrop-fade 140ms ease-out both;
   }
 }

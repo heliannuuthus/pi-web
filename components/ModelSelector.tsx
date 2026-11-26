@@ -317,6 +317,7 @@ export function ModelSelector({
             ref={panelRef}
             role="listbox"
             aria-label={ariaLabel}
+            data-placement={openAbove ? "top" : "bottom"}
             style={{
               position: "fixed",
               ...verticalPosition,

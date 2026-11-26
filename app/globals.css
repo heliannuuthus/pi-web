@@ -27,6 +27,9 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
   --bg: oklch(1 0 0);
   --bg-panel: oklch(0.978 0.004 264);
   --bg-hover: oklch(0.958 0.008 264);
@@ -2540,11 +2543,11 @@ pre, code {
   pointer-events: none;
   transform: translateY(4px) scale(0.96);
   transition:
-    opacity 0.16s ease,
-    transform 0.16s ease,
-    background 0.12s,
-    color 0.12s,
-    visibility 0s linear 0.16s;
+    opacity 180ms var(--ease-out-quint),
+    transform 180ms var(--ease-out-quint),
+    background-color 140ms ease,
+    color 140ms ease,
+    visibility 0s linear 180ms;
 }
 
 .chat-scroll-to-bottom.is-visible {
@@ -2553,18 +2556,29 @@ pre, code {
   pointer-events: auto;
   transform: none;
   transition:
-    opacity 0.16s ease,
-    transform 0.16s ease,
-    background 0.12s,
-    color 0.12s,
+    opacity 180ms var(--ease-out-quint),
+    transform 180ms var(--ease-out-quint),
+    background-color 140ms ease,
+    color 140ms ease,
     visibility 0s;
 }
 
-.chat-scroll-to-bottom.is-visible:hover,
+.chat-scroll-to-bottom.is-visible:active {
+  transform: scale(0.94);
+}
+
 .chat-scroll-to-bottom.is-visible:focus-visible {
   opacity: 1;
   background: var(--bg-hover);
   color: var(--text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chat-scroll-to-bottom.is-visible:hover {
+    opacity: 1;
+    background: var(--bg-hover);
+    color: var(--text);
+  }
 }
 
 .chat-scroll-to-bottom:focus-visible {
@@ -3268,7 +3282,7 @@ span.token.table {
   .sidebar-container {
     position: relative;
     overflow: hidden;
-    transition: width 0.2s ease, min-width 0.2s ease;
+    transition: width 240ms var(--ease-drawer), min-width 240ms var(--ease-drawer);
   }
   .sidebar-container.sidebar-open {
     width: var(--sidebar-width, 260px);
@@ -3294,7 +3308,7 @@ span.token.table {
 @media (min-width: 960px) {
   .right-panel-container {
     overflow: hidden;
-    transition: width 0.2s ease, min-width 0.2s ease;
+    transition: width 240ms var(--ease-drawer), min-width 240ms var(--ease-drawer);
     flex-shrink: 0;
   }
   .right-panel-container.right-panel-open {
@@ -3330,7 +3344,7 @@ span.token.table {
     background: rgba(0, 0, 0, 0.24);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+    transition: opacity 200ms var(--ease-out-quint);
   }
   .right-panel-overlay-backdrop.is-open {
     opacity: 1;
@@ -3346,7 +3360,7 @@ span.token.table {
     min-width: 300px;
     overflow: hidden;
     box-shadow: -12px 0 32px rgba(0, 0, 0, 0.18);
-    transition: transform 0.2s ease;
+    transition: transform 260ms var(--ease-drawer);
   }
   .right-panel-container.right-panel-open {
     transform: translateX(0);
@@ -3416,7 +3430,7 @@ span.token.table {
     width: 280px;
     max-width: 85vw;
     height: var(--app-viewport-height, 100dvh);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 280ms var(--ease-drawer), box-shadow 280ms var(--ease-out-quint);
   }
   .sidebar-container.sidebar-open {
     transform: translateX(0);
@@ -3433,7 +3447,7 @@ span.token.table {
     height: var(--app-viewport-height, 100dvh);
     z-index: 250;
     overflow: hidden;
-    transition: transform 0.2s ease;
+    transition: transform 260ms var(--ease-drawer);
   }
   .right-panel-container.right-panel-open {
     width: auto;
@@ -3515,5 +3529,92 @@ span.token.table {
   /* Tapping it would close the keyboard anyway. */
   html[data-keyboard-open] .new-session-context {
     display: none !important;
+  }
+}
+
+/* Trigger-anchored popover entrance for ModelSelector listbox */
+@keyframes popover-enter-from-bottom {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes popover-enter-from-top {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.model-selector [role="listbox"] {
+  transform-origin: top left;
+  animation: popover-enter-from-top 160ms var(--ease-out-quint) both;
+}
+
+.model-selector [role="listbox"][data-placement="top"] {
+  transform-origin: bottom left;
+  animation: popover-enter-from-bottom 160ms var(--ease-out-quint) both;
+}
+
+/* Tactile press feedback for composer Send/Stop and panel expand controls */
+.chat-send-btn {
+  transition:
+    transform 140ms var(--ease-out-quint),
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.chat-send-btn:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.chat-stop-btn {
+  transition:
+    transform 140ms var(--ease-out-quint),
+    background-color 120ms ease;
+}
+
+.chat-stop-btn:active {
+  transform: scale(0.96);
+}
+
+.file-panel-expand-button {
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms var(--ease-out-quint);
+}
+
+.file-panel-expand-button:active {
+  transform: scale(0.95);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chat-send-btn:not(:disabled):hover {
+    background: var(--accent-hover) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .model-selector [role="listbox"],
+  .model-selector [role="listbox"][data-placement="top"] {
+    animation: modal-backdrop-fade 120ms ease-out both;
+  }
+
+  .sidebar-container,
+  .right-panel-container,
+  .chat-send-btn,
+  .chat-stop-btn,
+  .file-panel-expand-button {
+    transition-duration: 0.001ms;
   }
 }

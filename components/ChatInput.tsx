@@ -2606,6 +2606,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandle, Props>(function ChatIn
             </div>
           ) : (
             <button
+              className="chat-send-btn"
               onClick={handleSend}
               disabled={!value.trim() && !attachedImages.length}
               title={t("chat.send")}
@@ -2625,7 +2626,6 @@ export const ChatInput = memo(forwardRef<ChatInputHandle, Props>(function ChatIn
                 fontWeight: 600,
                 letterSpacing: "-0.01em",
                 boxShadow: (value.trim() || attachedImages.length) ? "0 1px 3px color-mix(in srgb, var(--accent) 25%, transparent)" : "none",
-                transition: "background 0.15s, box-shadow 0.15s",
               }}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -3010,6 +3010,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandle, Props>(function ChatIn
 
             {isStreaming && (
               <button
+                className="chat-stop-btn"
                 onClick={onAbort}
                  title={t("chat.stopAgent")}
                 style={{
@@ -3023,7 +3024,6 @@ export const ChatInput = memo(forwardRef<ChatInputHandle, Props>(function ChatIn
                   cursor: "pointer",
                   fontSize: 12, fontWeight: 600,
                   whiteSpace: "nowrap", letterSpacing: "-0.01em",
-                  transition: "background 0.12s",
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.16)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
