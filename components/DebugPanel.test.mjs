@@ -737,7 +737,7 @@ test("the Debug button only toggles its panel, right-aligned before the file pan
   assert.match(shellSource, /marginLeft: !mobile && !showChat \? "auto" : 0,/);
   // Phones: on the bar on a wide one, in the "more" overlay on a narrow one.
   assert.match(shellSource, /\{!isNarrowMobile && renderChatToolbarActions\(true\)\}\s*\{!isNarrowMobile && renderDebugButton\(true\)\}/);
-  assert.match(shellSource, /\{renderChatToolbarActions\(true\)\}\s*\{renderDebugButton\(true\)\}\s*<\/div>/);
+  assert.match(shellSource, /\{renderChatToolbarActions\(true\)\}\s*\{renderDebugButton\(true\)\}\s*\{renderSoundToggleButton\(true\)\}\s*<\/div>/);
 });
 
 test("Escape with focus in the panel gives it back to the Debug button, after the panel left the page", () => {
